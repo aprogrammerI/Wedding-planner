@@ -1,3 +1,4 @@
 # Wedding-planner
 
-A full-stack web application to help brides, grooms, and planners organize and manage weddings with features like task tracking, guest list management, vendor coordination, and budget planning.
+Welcome to the **Wedding Planner** — a web-based platform built with **Java (Spring Boot)** and **Angular** that helps users plan and manage weddings. Users can track tasks, manage guest lists, assign vendors, and monitor budgets through a clean and interactive interface.
+
