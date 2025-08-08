@@ -1,0 +1,16 @@
+<div class="mb-3 d-flex">
+  <input [(ngModel)]="newName" class="form-control" placeholder="New guest name" />
+  <button (click)="add()" class="btn btn-outline-primary ms-2">Add</button>
+</div>
+<ul class="list-group">
+  <li *ngFor="let g of guests" class="list-group-item d-flex justify-content-between align-items-center">
+    <div>
+      <strong [class.text-success]="g.status==='accepted'">{{ g.name }}</strong>
+      <small class="text-muted">({{ g.status }})</small>
+    </div>
+    <div>
+      <button (click)="toggle(g)" class="btn btn-sm btn-outline-secondary me-2">Toggle</button>
+      <button (click)="remove(g.id)" class="btn btn-sm btn-outline-danger">X</button>
+    </div>
+  </li>
+</ul>

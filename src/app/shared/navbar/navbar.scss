@@ -1,0 +1,14 @@
+// Custom styles for navbar (minimal since we're using Bootstrap)
+.navbar-brand {
+  font-weight: bold;
+  color: #6b849e !important;
+}
+
+.nav-link.active {
+  font-weight: 600;
+  color: #6b849e !important;
+}
+
+.nav-link:hover {
+  color: #6b849e !important;
+}

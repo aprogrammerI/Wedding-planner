@@ -1,0 +1,21 @@
+<div class="mb-3 row">
+  <div class="col">
+    <input [(ngModel)]="newName" class="form-control" placeholder="Item name" />
+  </div>
+  <div class="col">
+    <input type="number" [(ngModel)]="newAmount" class="form-control" placeholder="Amount" />
+  </div>
+  <div class="col-auto">
+    <button (click)="add()" class="btn btn-outline-primary">Add</button>
+  </div>
+</div>
+<ul class="list-group mb-3">
+  <li *ngFor="let e of expenses" class="list-group-item d-flex justify-content-between">
+    {{ e.name }}
+    <div>
+      <strong>{{ e.amount | currency }}</strong>
+      <button (click)="remove(e.id)" class="btn btn-sm btn-outline-danger ms-2">✕</button>
+    </div>
+  </li>
+</ul>
+<div class="text-end">Total: <strong>{{ total() | currency }}</strong></div>
