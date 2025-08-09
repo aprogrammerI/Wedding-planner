@@ -6,6 +6,7 @@ export interface Expense {
   id: number;
   name: string;
   amount: number;
+  category?: string;
 }
 
 @Injectable({
@@ -13,12 +14,12 @@ export interface Expense {
 })
 export class BudgetService {
   private expenses: Expense[] = [
-    { id: 1, name: 'Venue', amount: 2000 },
-    { id: 2, name: 'Catering', amount: 1500 },
-    { id: 3, name: 'Photography', amount: 500 },
-    { id: 4, name: 'Flowers', amount: 300 },
-    { id: 5, name: 'Decorations', amount: 700 },
-    { id: 6, name: 'Music', amount: 1000 }
+    { id: 1, name: 'Grand Venues', amount: 2000, category: 'Venues' },
+    { id: 2, name: 'Dinner Package', amount: 1500, category: 'Catering' },
+    { id: 3, name: 'Bliss Photography', amount: 500, category: 'Photography' },
+    { id: 4, name: 'Floral Fantasy', amount: 300, category: 'Flowers' },
+    { id: 5, name: 'Decor & Lighting', amount: 700, category: 'Event Planning' },
+    { id: 6, name: 'Live Band', amount: 1000, category: 'Music' }
   ];
 
   private nextId = 7;
@@ -34,6 +35,14 @@ export class BudgetService {
     };
     this.expenses.push(newExpense);
     return of(newExpense).pipe(delay(100));
+  }
+
+  update(expense: Expense): Observable<Expense> {
+    const idx = this.expenses.findIndex(e => e.id === expense.id);
+    if (idx !== -1) {
+      this.expenses[idx] = expense;
+    }
+    return of(expense).pipe(delay(100));
   }
 
   remove(id: number): Observable<void> {

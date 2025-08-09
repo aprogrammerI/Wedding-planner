@@ -1,14 +1,50 @@
 // Custom styles for navbar (minimal since we're using Bootstrap)
+/* Navbar themed with custom palette */
 .navbar-brand {
-  font-weight: bold;
-  color: #6b849e !important;
+  font-weight: 700;
+  color: var(--color-dark) !important;
+}
+
+.navbar {
+  border-bottom: 1px solid var(--bs-border-color);
+  background-color: #ffffff !important;
+}
+
+.btn-outline-secondary {
+  color: var(--color-dark);
+  border-color: var(--bs-border-color);
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--color-muted);
+  color: var(--color-dark);
+}
+
+.btn-outline-primary {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+.btn-primary {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.btn-primary:hover {
+  background-color: #f79a89;
+  border-color: #f79a89;
 }
 
 .nav-link.active {
   font-weight: 600;
-  color: #6b849e !important;
+  color: var(--color-primary) !important;
 }
 
 .nav-link:hover {
-  color: #6b849e !important;
+  color: var(--color-primary) !important;
 }

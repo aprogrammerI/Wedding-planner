@@ -5,17 +5,68 @@
   <div class="col">
     <input type="number" [(ngModel)]="newAmount" class="form-control" placeholder="Amount" />
   </div>
+  <div class="col">
+    <select [(ngModel)]="newCategory" class="form-select">
+      <option value="">Select category</option>
+      <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+    </select>
+  </div>
   <div class="col-auto">
     <button (click)="add()" class="btn btn-outline-primary">Add</button>
   </div>
 </div>
 <ul class="list-group mb-3">
-  <li *ngFor="let e of expenses" class="list-group-item d-flex justify-content-between">
-    {{ e.name }}
-    <div>
-      <strong>{{ e.amount | currency }}</strong>
-      <button (click)="remove(e.id)" class="btn btn-sm btn-outline-danger ms-2">✕</button>
+  <li *ngFor="let e of expenses" class="list-group-item">
+    <div class="d-flex justify-content-between align-items-center" *ngIf="editingId !== e.id; else editRow">
+      <div>
+        <div class="fw-semibold">{{ e.name }}</div>
+        <div class="text-muted small" *ngIf="e.category">{{ e.category }}</div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <strong>{{ e.amount | currency }}</strong>
+        <button (click)="startEdit(e)" class="btn btn-sm btn-outline-primary">Edit</button>
+        <button (click)="remove(e.id)" class="btn btn-sm btn-outline-danger">Delete</button>
+      </div>
     </div>
+
+    <ng-template #editRow>
+      <div class="row g-2 align-items-end">
+        <div class="col-md-5">
+          <label class="form-label">Name</label>
+          <input [(ngModel)]="editDraft.name" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Amount</label>
+          <input type="number" [(ngModel)]="editDraft.amount" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Category</label>
+          <select [(ngModel)]="editDraft.category" class="form-select form-select-sm">
+            <option value="">Select category</option>
+            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+          <button (click)="saveEdit()" class="btn btn-sm btn-primary">Save</button>
+          <button (click)="cancelEdit()" class="btn btn-sm btn-outline-secondary">Cancel</button>
+        </div>
+      </div>
+    </ng-template>
   </li>
 </ul>
-<div class="text-end">Total: <strong>{{ total() | currency }}</strong></div>
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="pie" [ngStyle]="{ 'background-image': pieGradient }"></div>
+  </div>
+  <div class="col-md-6">
+    <h6 class="mb-3">Breakdown</h6>
+    <ul class="list-unstyled small mb-0">
+      <li *ngFor="let s of categorySlices" class="d-flex align-items-center mb-1">
+        <span class="legend me-2" [ngStyle]="{ 'background-color': s.color }"></span>
+        <span class="flex-grow-1">{{ s.category }}</span>
+        <span class="text-muted">{{ s.amount | currency }} ({{ s.percent | number:'1.0-0' }}%)</span>
+      </li>
+    </ul>
+    <div class="text-end mt-3">Total: <strong>{{ total() | currency }}</strong></div>
+  </div>
+</div>

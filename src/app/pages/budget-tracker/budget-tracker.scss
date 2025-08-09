@@ -1,0 +1,15 @@
+.pie {
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: conic-gradient(#e9ecef 0 100%);
+  box-shadow: 0 10px 24px rgba(53,55,46,0.08);
+}
+
+.legend {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+}
+

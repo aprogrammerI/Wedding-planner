@@ -1,1 +1,23 @@
-// Task manager component styles can be added here
+/* Prevent accidental text selection causing perceived double toggle */
+.list-group-item {
+  user-select: none;
+}
+
+/* Minor spacing tweaks */
+.list-group-item .badge {
+  text-transform: capitalize;
+}
+
+/* Custom priority colors */
+.priority-high {
+  background-color: #e29578 !important;
+  color: #fff;
+}
+.priority-medium {
+  background-color: #E7AC96 !important;
+  color: #4a3b35;
+}
+.priority-low {
+  background-color: #ECC7BA !important;
+  color: #4a3b35;
+}

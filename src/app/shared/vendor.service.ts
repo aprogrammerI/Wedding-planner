@@ -11,6 +11,15 @@ export interface Vendor {
   website?: string;
 }
 
+export const VENDOR_CATEGORIES: string[] = [
+  'Event Planning',
+  'Photography',
+  'Catering',
+  'Flowers',
+  'Music',
+  'Venues'
+];
+
 @Injectable({
   providedIn: 'root'
 })
