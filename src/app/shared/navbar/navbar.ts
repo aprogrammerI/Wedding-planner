@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService, RoleOption } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
@@ -13,7 +14,7 @@ import { AuthService, RoleOption } from '../../services/auth.service';
 export class Navbar {
   isMenuOpen = false;
   
-  constructor(public authService: AuthService) {}
+  constructor(public authService: AuthService, private router: Router) {}
   
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;

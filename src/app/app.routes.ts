@@ -3,12 +3,10 @@ import { Home } from './pages/home/home';
 import { Login } from './pages/auth/login/login';
 import { Register } from './pages/auth/register/register';
 import { RoleSelection } from './pages/role-selection/role-selection';
-import { Dashboard } from './pages/dashboard/dashboard';
 import { GuestList } from './pages/guest-list/guest-list';
 import { TaskManager } from './pages/task-manager/task-manager';
 import { Vendors } from './pages/vendors/vendors';
 import { BudgetTracker } from './pages/budget-tracker/budget-tracker';
-import { Rsvps } from './pages/rsvps/rsvps';
 import { WeddingDetails } from './pages/wedding-details/wedding-details';
 import { Collaboration } from './pages/collaboration/collaboration';
 import { AuthGuard } from './shared/auth.guard';
@@ -23,11 +21,6 @@ export const routes: Routes = [
     path: 'role-selection',  
     component: RoleSelection,
     canActivate: [AuthGuard]
-  },
-  { 
-    path: 'dashboard',  
-    component: Dashboard,
-    canActivate: [RoleGuard]
   },
   { 
     path: 'guest-list', 
@@ -47,11 +40,6 @@ export const routes: Routes = [
   { 
     path: 'budget-tracker', 
     component: BudgetTracker,
-    canActivate: [RoleGuard]
-  },
-  { 
-    path: 'rsvps',      
-    component: Rsvps,
     canActivate: [RoleGuard]
   },
   { 

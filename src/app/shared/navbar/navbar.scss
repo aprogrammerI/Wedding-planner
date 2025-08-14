@@ -78,3 +78,31 @@
   color: #6c757d !important;
   font-size: 0.9rem;
 }
+
+.navbar-logo-img {
+  height: 110px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  margin-right: 18px;
+  /* The parent a.navbar-brand should have max-height and overflow:hidden */
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+app-sidebar {
+  flex: 0 0 220px;
+  min-width: 220px;
+  max-width: 220px;
+  height: 100vh;
+  z-index: 2;
+}
+.main-content {
+  flex: 1 1 auto;
+  padding: 2rem 2.5rem 2rem 2.5rem;
+  background: #f8f9fa;
+  min-height: 100vh;
+}

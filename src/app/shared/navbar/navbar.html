@@ -1,18 +1,17 @@
 <nav class="navbar navbar-light bg-white shadow-sm">
   <div class="container">
-    <a class="navbar-brand" routerLink="/home">Wedding Planner</a>
+    <a class="navbar-brand d-flex align-items-center" routerLink="/home" style="max-height:60px;overflow:hidden;">
+      <img src="assets/logo.png" alt="Logo" class="navbar-logo-img" style="height:110px;width:auto;margin-right:18px;object-fit:contain;display:block;" />
+      Wedding Planner
+    </a>
     <div class="d-flex gap-2 align-items-center">
       <!-- Show navigation links only when authenticated and has role -->
       <ng-container *ngIf="authService.isAuthenticated() && authService.hasRole()">
-        <a routerLink="/dashboard" class="btn btn-outline-secondary">Dashboard</a>
         <a routerLink="/tasks" class="btn btn-outline-secondary">Tasks</a>
         <a routerLink="/budget-tracker" class="btn btn-outline-secondary">Budget</a>
         <a routerLink="/vendors" class="btn btn-outline-secondary">Vendors</a>
         <a routerLink="/guest-list" class="btn btn-outline-secondary">Guests</a>
-        <a routerLink="/rsvps" class="btn btn-outline-secondary">RSVP</a>
         <a routerLink="/wedding-details" class="btn btn-outline-secondary">Details</a>
-        <a routerLink="/collaboration" class="btn btn-outline-secondary">Collaboration</a>
-        
         <!-- User role icon and logout -->
         <div class="dropdown">
           <button class="btn btn-outline-primary dropdown-toggle user-role-btn" type="button" data-bs-toggle="dropdown">
@@ -27,13 +26,11 @@
           </ul>
         </div>
       </ng-container>
-      
       <!-- Show role selection prompt when authenticated but no role -->
       <ng-container *ngIf="authService.isAuthenticated() && !authService.hasRole()">
         <span class="text-muted me-3">Please select your role to continue</span>
         <a routerLink="/role-selection" class="btn btn-primary">Select Role</a>
       </ng-container>
-      
       <!-- Show login/register when not authenticated -->
       <ng-container *ngIf="!authService.isAuthenticated()">
         <a routerLink="/login" class="btn btn-outline-primary">Login</a>

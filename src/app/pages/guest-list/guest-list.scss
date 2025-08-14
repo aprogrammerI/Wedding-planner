@@ -1,1 +1,183 @@
-/* simple list styling here */
+.guest-list-row {
+  min-height: 80vh;
+}
+.guest-col {
+  min-height: 60vh;
+}
+.guest-shoe {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 1rem auto;
+}
+h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.list-group {
+  max-width: 400px;
+}
+.btn.active, .btn:active {
+  background-color: var(--color-primary, #6e7f67) !important;
+  color: #fff !important;
+  border-color: var(--color-primary, #6e7f67) !important;
+}
+.table {
+  background: #fff;
+}
+.delete-icon {
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 24px;
+  border-radius: 4px;
+  padding: 4px;
+  transition: background 0.2s, transform 0.2s;
+  vertical-align: middle;
+}
+.delete-icon:hover {
+  background: rgba(220, 53, 69, 0.1);
+  transform: scale(1.1);
+}
+.edit-icon {
+  color: #e29578;
+  cursor: pointer;
+  font-size: 24px;
+  border-radius: 4px;
+  padding: 4px;
+  transition: background 0.2s, transform 0.2s;
+  vertical-align: middle;
+}
+.edit-icon:hover {
+  background: rgba(226, 149, 120, 0.1);
+  transform: scale(1.1);
+}
+.guest-row-action {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: -40px;
+  margin-bottom: 8px;
+  margin-right: 8px;
+  position: relative;
+  z-index: 2;
+}
+.guest-row-data {
+  position: relative;
+  z-index: 1;
+}
+.rsvp-dropdown {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  min-width: 120px;
+}
+.rsvp-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 6px;
+  vertical-align: middle;
+  filter: invert(77%) sepia(13%) saturate(1162%) hue-rotate(314deg) brightness(101%) contrast(92%);
+}
+.rsvp-status-text {
+  text-transform: capitalize;
+  font-weight: 500;
+  color: #222;
+  margin-left: 2px;
+}
+.rsvp-dropdown-list {
+  position: absolute;
+  left: 0;
+  top: 110%;
+  background: #fff;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 10;
+  min-width: 140px;
+  border-radius: 6px;
+  padding: 4px 0;
+}
+.rsvp-dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 16px;
+  cursor: pointer;
+  font-size: 15px;
+  color: #222;
+  transition: background 0.15s;
+}
+.rsvp-dropdown-item:hover {
+  background: #F9AFA0;
+  color: #fff;
+}
+.rsvp-dropdown-item.selected {
+  background: #F9AFA0;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.seating-chart-section {
+  margin-top: 3rem;
+}
+.seating-chart-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3rem;
+  justify-content: center;
+}
+.seating-table-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 260px;
+}
+.table-label {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+.table-circle {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: #f9f9f9;
+  border: 3px solid #F9AFA0;
+  margin-bottom: 1.5rem;
+}
+.guest-circle-wrapper {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 36px;
+}
+.guest-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 2px;
+  color: #333;
+  white-space: nowrap;
+}
+.guest-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #F9AFA0;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+@media (max-width: 768px) {
+  .guest-list-row {
+    flex-direction: column;
+  }
+  .guest-col {
+    min-height: auto;
+    margin-bottom: 2rem;
+  }
+  .list-group {
+    width: 100%;
+    max-width: 100%;
+  }
+}

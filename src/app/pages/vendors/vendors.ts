@@ -2,11 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { VendorService, Vendor } from '../../services/vendor.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { TaskService, Task } from '../../services/task.service';
 
 @Component({
   selector: 'app-vendors',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatIconModule],
   templateUrl: './vendors.html',
   styleUrls: ['./vendors.scss']
 })
@@ -16,15 +18,50 @@ export class Vendors implements OnInit {
   editingVendor: Vendor | null = null;
   showAddForm = false;
   showEditForm = false;
+  tasks: Task[] = [];
 
-  constructor(private svc: VendorService) {}
+  constructor(private svc: VendorService, private taskService: TaskService) {}
 
-  ngOnInit() { 
-    this.load(); 
+  ngOnInit() {
+    this.load();
+    this.loadTasks();
   }
 
   load() {
     this.svc.list().subscribe(v => this.vendors = v);
+  }
+
+  loadTasks() {
+    this.taskService.list().subscribe(ts => this.tasks = ts);
+  }
+
+  getTasksForVendor(vendorId: number): Task[] {
+    return this.tasks.filter(t => t.vendorId === vendorId);
+  }
+
+  getUnassignedTasks(): Task[] {
+    return this.tasks.filter(t => !t.vendorId);
+  }
+
+  assignTaskToVendor(task: Task, vendorId: number) {
+    const updated = { ...task, vendorId };
+    this.taskService.update(updated).subscribe(() => this.loadTasks());
+  }
+
+  unassignTaskFromVendor(task: Task) {
+    const updated = { ...task, vendorId: undefined };
+    this.taskService.update(updated).subscribe(() => this.loadTasks());
+  }
+
+  handleAssignTaskToVendor(event: Event, vendorId: number) {
+    const select = event.target as HTMLSelectElement;
+    const taskId = Number(select.value);
+    if (!taskId) return;
+    const task = this.tasks.find(t => t.id === taskId);
+    if (task) {
+      this.assignTaskToVendor(task, vendorId);
+      select.value = '';
+    }
   }
 
   add() {
