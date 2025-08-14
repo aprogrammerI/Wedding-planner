@@ -1,0 +1,195 @@
+<div class="collaboration-container">
+  <div class="container py-4">
+    <div class="row">
+      <!-- Header -->
+      <div class="col-12 mb-4">
+        <h1 class="text-center mb-3">Collaboration & Sharing</h1>
+        <p class="text-center text-muted">Invite partners and collaborate on your wedding planning</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="col-12 mb-4 text-center">
+        <button class="btn btn-primary me-3" (click)="toggleCreateProjectForm()">
+          <i class="fas fa-plus me-2"></i>Create Wedding Project
+        </button>
+        <button class="btn btn-outline-primary" (click)="toggleInviteForm()">
+          <i class="fas fa-user-plus me-2"></i>Invite Partner
+        </button>
+      </div>
+
+      <!-- Create Project Form -->
+      <div class="col-12 mb-4" *ngIf="showCreateProjectForm">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Create New Wedding Project</h5>
+          </div>
+          <div class="card-body">
+            <form (ngSubmit)="createWeddingProject()">
+              <div class="mb-3">
+                <label for="projectName" class="form-label">Project Name</label>
+                <input
+                  type="text"
+                  id="projectName"
+                  class="form-control"
+                  [(ngModel)]="newProject.name"
+                  name="projectName"
+                  placeholder="e.g., John & Jane's Wedding"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="projectDescription" class="form-label">Description</label>
+                <textarea
+                  id="projectDescription"
+                  class="form-control"
+                  [(ngModel)]="newProject.description"
+                  name="projectDescription"
+                  rows="3"
+                  placeholder="Describe your wedding project..."
+                ></textarea>
+              </div>
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Create Project</button>
+                <button type="button" class="btn btn-secondary" (click)="toggleCreateProjectForm()">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invite Partner Form -->
+      <div class="col-12 mb-4" *ngIf="showInviteForm">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Invite Partner to Collaborate</h5>
+          </div>
+          <div class="card-body">
+            <form (ngSubmit)="sendInvitation()">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="inviteEmail" class="form-label">Partner's Email</label>
+                  <input
+                    type="email"
+                    id="inviteEmail"
+                    class="form-control"
+                    [(ngModel)]="newInvitation.toEmail"
+                    name="inviteEmail"
+                    placeholder="partner@example.com"
+                    required
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="inviteRole" class="form-label">Partner's Role</label>
+                  <select
+                    id="inviteRole"
+                    class="form-select"
+                    [(ngModel)]="newInvitation.role"
+                    name="inviteRole"
+                    required
+                  >
+                    <option value="">Select Role</option>
+                    <option *ngFor="let role of availableRoles" [value]="role.value">
+                      {{ role.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Send Invitation</button>
+                <button type="button" class="btn btn-secondary" (click)="toggleInviteForm()">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wedding Projects -->
+      <div class="col-12 mb-4">
+        <h3 class="mb-3">Your Wedding Projects</h3>
+        <div class="row">
+          <div class="col-md-6 mb-3" *ngFor="let project of weddingProjects">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title">{{ project.name }}</h5>
+                <p class="card-text text-muted">{{ project.description }}</p>
+                <div class="mb-3">
+                  <strong>Collaborators:</strong>
+                  <div class="mt-2">
+                    <span 
+                      *ngFor="let collaborator of project.collaborators" 
+                      class="badge bg-primary me-1"
+                    >
+                      {{ collaborator.name }} ({{ collaborator.role }})
+                    </span>
+                  </div>
+                </div>
+                <small class="text-muted">
+                  Created: {{ project.createdAt | date:'shortDate' }}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Invitations -->
+      <div class="col-12 mb-4" *ngIf="invitations.length > 0">
+        <h3 class="mb-3">Pending Invitations</h3>
+        <div class="card">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>From</th>
+                    <th>Role</th>
+                    <th>Wedding</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let invitation of invitations">
+                    <td>{{ invitation.fromUserName }}</td>
+                    <td>{{ invitation.role }}</td>
+                    <td>{{ invitation.weddingId }}</td>
+                    <td>
+                      <span [class]="getInvitationStatusClass(invitation.status)">
+                        {{ invitation.status | titlecase }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="btn-group" *ngIf="invitation.status === 'pending'">
+                        <button 
+                          class="btn btn-sm btn-success" 
+                          (click)="acceptInvitation(invitation)"
+                        >
+                          Accept
+                        </button>
+                        <button 
+                          class="btn btn-sm btn-danger" 
+                          (click)="declineInvitation(invitation)"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Content Messages -->
+      <div class="col-12 text-center" *ngIf="weddingProjects.length === 0 && invitations.length === 0">
+        <div class="py-5">
+          <i class="fas fa-users fa-3x text-muted mb-3"></i>
+          <h4 class="text-muted">No Collaborations Yet</h4>
+          <p class="text-muted">Start by creating a wedding project or inviting partners to collaborate.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -99,4 +99,32 @@
     </div>
   </div>
 </section>
+
+<!-- Collaboration Section -->
+<section class="py-5 bg-gradient" *ngIf="isAuthenticated && hasRole">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <h2 class="text-white mb-4">Plan Together with Your Loved Ones</h2>
+        <p class="text-white-50 lead mb-4">
+          Wedding planning is a team effort! Invite your partner, family members, and friends to collaborate on your special day. 
+          Share tasks, manage budgets together, and keep everyone in the loop with real-time updates.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a routerLink="/collaboration" class="btn btn-light btn-lg">
+            <i class="fas fa-users me-2"></i>Start Collaborating
+          </a>
+          <a routerLink="/register" class="btn btn-outline-light btn-lg">
+            Create Free Account
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-4 text-center">
+        <div class="collaboration-icon">
+          <i class="fas fa-handshake fa-4x text-white-50"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 </div>

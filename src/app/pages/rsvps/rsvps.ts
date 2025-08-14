@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RsvpService, Rsvp } from '../../shared/rsvp.service';
+import { RsvpService, Rsvp } from '../../services/rsvp.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 

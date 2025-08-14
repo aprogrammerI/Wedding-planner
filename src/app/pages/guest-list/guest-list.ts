@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { GuestService, Guest } from '../../shared/guest.service';
+import { GuestService, Guest } from '../../services/guest.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 

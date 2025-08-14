@@ -1,0 +1,25 @@
+<div class="role-selection-container">
+  <div class="role-selection-content">
+    <h1 class="main-title">Who are you?</h1>
+    
+    <div class="roles-grid">
+      <div 
+        *ngFor="let role of availableRoles" 
+        class="role-card"
+        [class.selected]="selectedRole === role.role"
+        [class.disabled]="isSelecting"
+        (click)="!isSelecting && selectRole(role.role)"
+      >
+        <div class="role-icon">
+          <img [src]="getRoleIcon(role)" [alt]="role.displayName" />
+        </div>
+        <h3 class="role-title">{{ role.displayName }}</h3>
+        <p class="role-description">{{ role.description }}</p>
+        
+        <div *ngIf="isSelecting && selectedRole === role.role" class="loading-spinner">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

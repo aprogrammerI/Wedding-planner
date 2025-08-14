@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { VendorService, Vendor } from '../../shared/vendor.service';
+import { VendorService, Vendor } from '../../services/vendor.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 

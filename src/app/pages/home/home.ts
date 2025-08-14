@@ -1,6 +1,7 @@
-import { Component }       from '@angular/core';
+import { Component, OnInit }       from '@angular/core';
 import { CommonModule }    from '@angular/common';
 import { RouterLink }      from '@angular/router';
+import { AuthService }     from '../../services/auth.service';
 
 interface Card {
   title: string;
@@ -16,7 +17,10 @@ interface Card {
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
 })
-export class Home {
+export class Home implements OnInit {
+  isAuthenticated = false;
+  hasRole = false;
+  
   cards: Card[] = [
     { 
       title: 'Guest List', 
@@ -49,4 +53,15 @@ export class Home {
       cta: 'Dashboard →' 
     }
   ];
+
+  constructor(private authService: AuthService) {}
+
+  ngOnInit() {
+    this.checkAuthStatus();
+  }
+
+  checkAuthStatus() {
+    this.isAuthenticated = this.authService.isAuthenticated();
+    this.hasRole = this.authService.hasRole();
+  }
 }

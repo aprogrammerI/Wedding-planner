@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { AuthService } from '../auth.service';
+import { AuthService, RoleOption } from '../../services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -21,5 +21,20 @@ export class Navbar {
   
   logout() {
     this.authService.logout();
+  }
+
+  getRoleIcon(): string {
+    const currentRole = this.authService.getCurrentUserRole();
+    if (currentRole) {
+      // Special handling for admin role
+      if (currentRole === 'admin') {
+        return 'assets/admin.png';
+      }
+      
+      // For other roles, find in available roles
+      const roleOption = this.authService.availableRoles.find(role => role.role === currentRole);
+      return roleOption ? roleOption.icon : 'assets/user.png';
+    }
+    return 'assets/user.png';
   }
 }

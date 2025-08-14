@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../../shared/auth.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -23,7 +23,10 @@ export class Register {
   register() {
     this.error = '';
     this.auth.register(this.user).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
+      next: () => {
+        // After registration, user needs to select a role
+        this.router.navigate(['/role-selection']);
+      },
       error: () => this.error = 'Registration failed. Please try again.'
     });
   }

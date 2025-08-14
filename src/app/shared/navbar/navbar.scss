@@ -48,3 +48,33 @@
 .nav-link:hover {
   color: var(--color-primary) !important;
 }
+
+/* Role icon styling */
+.user-role-btn {
+  padding: 0.375rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+}
+
+.user-role-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #f8f9fa;
+  padding: 4px;
+  transition: all 0.3s ease;
+}
+
+.user-role-btn:hover .user-role-icon {
+  transform: scale(1.1);
+  background: #e9ecef;
+}
+
+/* Role selection prompt */
+.text-muted {
+  color: #6c757d !important;
+  font-size: 0.9rem;
+}

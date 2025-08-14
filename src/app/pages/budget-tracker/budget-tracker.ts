@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { BudgetService, Expense } from '../../shared/budget.service';
-import { VENDOR_CATEGORIES } from '../../shared/vendor.service';
+import { BudgetService, Expense } from '../../services/budget.service';
+import { VENDOR_CATEGORIES } from '../../services/vendor.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
