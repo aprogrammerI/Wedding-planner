@@ -1,21 +1,201 @@
-<div class="details-container">
-  <h1>Our Wedding Details</h1>
-  
-  <div class="detail-card">
-    <h2> Date & Time</h2>
-    <p>Saturday, June 15, 2025 at 19:00</p>
+<div class="container py-4">
+  <div class="row g-3">
+    <!-- Couple Details -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Wedding Details Questionnaire</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Bride's First Name</label>
+              <input class="form-control" [(ngModel)]="brideFirstName" (change)="save()" placeholder="e.g., Jane" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Bride's Last Name</label>
+              <input class="form-control" [(ngModel)]="brideLastName" (change)="save()" placeholder="e.g., Doe" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Groom's First Name</label>
+              <input class="form-control" [(ngModel)]="groomFirstName" (change)="save()" placeholder="e.g., John" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Groom's Last Name</label>
+              <input class="form-control" [(ngModel)]="groomLastName" (change)="save()" placeholder="e.g., Smith" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Best Men / Best Women (multiple) -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Best Man & Best Woman</h5>
+          <div class="row g-4">
+            <!-- Best Men -->
+            <div class="col-md-6">
+              <h6 class="mb-2">Best Men</h6>
+              <div class="d-flex gap-2 mb-2">
+                <input class="form-control" [(ngModel)]="newBestManFirstName" placeholder="First name" (keyup.enter)="addBestMan()" />
+                <input class="form-control" [(ngModel)]="newBestManLastName" placeholder="Last name" (keyup.enter)="addBestMan()" />
+                <button class="btn btn-primary" (click)="addBestMan()">Add</button>
+              </div>
+              <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let p of bestMen; let i = index">
+                  <span>{{ p.firstName }} {{ p.lastName }}</span>
+                  <button class="btn btn-sm btn-outline-danger" (click)="removeBestMan(i)">Remove</button>
+                </li>
+                <li *ngIf="bestMen.length === 0" class="list-group-item text-muted">No best men added yet.</li>
+              </ul>
+            </div>
+
+            <!-- Best Women -->
+            <div class="col-md-6">
+              <h6 class="mb-2">Best Women</h6>
+              <div class="d-flex gap-2 mb-2">
+                <input class="form-control" [(ngModel)]="newBestWomanFirstName" placeholder="First name" (keyup.enter)="addBestWoman()" />
+                <input class="form-control" [(ngModel)]="newBestWomanLastName" placeholder="Last name" (keyup.enter)="addBestWoman()" />
+                <button class="btn btn-primary" (click)="addBestWoman()">Add</button>
+              </div>
+              <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let p of bestWomen; let i = index">
+                  <span>{{ p.firstName }} {{ p.lastName }}</span>
+                  <button class="btn btn-sm btn-outline-danger" (click)="removeBestWoman(i)">Remove</button>
+                </li>
+                <li *ngIf="bestWomen.length === 0" class="list-group-item text-muted">No best women added yet.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guests -->
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Bride's Guests</h5>
+          <div class="d-flex gap-2 mb-3">
+            <input class="form-control" [(ngModel)]="newBrideGuest" placeholder="Add guest name" (keyup.enter)="addBrideGuest()" />
+            <button class="btn btn-primary" (click)="addBrideGuest()">Add</button>
+          </div>
+          <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let g of brideGuests; let i = index">
+              <span>{{ g }}</span>
+              <button class="btn btn-sm btn-outline-danger" (click)="removeBrideGuest(i)">Remove</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Groom's Guests</h5>
+          <div class="d-flex gap-2 mb-3">
+            <input class="form-control" [(ngModel)]="newGroomGuest" placeholder="Add guest name" (keyup.enter)="addGroomGuest()" />
+            <button class="btn btn-primary" (click)="addGroomGuest()">Add</button>
+          </div>
+          <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let g of groomGuests; let i = index">
+              <span>{{ g }}</span>
+              <button class="btn btn-sm btn-outline-danger" (click)="removeGroomGuest(i)">Remove</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Itinerary -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Event Itinerary</h5>
+          <div class="row g-2 align-items-end mb-3">
+            <div class="col-md-3">
+              <label class="form-label">Date</label>
+              <input type="date" class="form-control" [(ngModel)]="newEventDate" />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Start</label>
+              <input type="time" class="form-control" [(ngModel)]="newEventStart" />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">End</label>
+              <input type="time" class="form-control" [(ngModel)]="newEventEnd" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Title</label>
+              <input class="form-control" [(ngModel)]="newEventTitle" placeholder="e.g., Ceremony" />
+            </div>
+            <div class="col-md-2 d-grid">
+              <button class="btn btn-primary" (click)="addEvent()">Add Event</button>
+            </div>
+          </div>
+
+          <!-- Timeline -->
+          <div class="timeline">
+            <div class="timeline-item" *ngFor="let e of sortedEvents">
+              <div class="timeline-time">
+                <div>{{ e.date | date:'MMM d' }}</div>
+                <div class="small text-muted">{{ e.start }} - {{ e.end }}</div>
+              </div>
+              <div class="timeline-content">
+                <div class="d-flex justify-content-between align-items-center">
+                  <strong>{{ e.title }}</strong>
+                  <button class="btn btn-sm btn-outline-danger" (click)="removeEvent(e.id)">Delete</button>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="events.length === 0" class="text-muted">No events yet. Add your first one above.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Budget -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Budget</h5>
+          <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label">Current total budget</label>
+              <input class="form-control" [value]="totalBudget | number:'1.0-2'" readonly />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Set new total</label>
+              <input type="number" min="0" class="form-control" [(ngModel)]="newBudgetValue" placeholder="e.g., 10000" />
+            </div>
+            <div class="col-md-2 d-grid">
+              <button class="btn btn-primary" (click)="setBudget()">Set Budget</button>
+            </div>
+          </div>
+          <hr />
+          <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label">Adjust amount</label>
+              <input type="number" min="0" class="form-control" [(ngModel)]="adjustBudgetAmount" placeholder="e.g., 500" />
+            </div>
+            <div class="col-md-2 d-grid">
+              <button class="btn btn-primary" (click)="addBudget()">Add</button>
+            </div>
+            <div class="col-md-2 d-grid">
+              <button class="btn btn-outline-secondary" (click)="removeBudget()">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="col-12">
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" (click)="save()">Save</button>
+        <button class="btn btn-outline-secondary" (click)="clearAll()">Clear All</button>
+      </div>
+    </div>
   </div>
-  
-  <div class="detail-card">
-    <h2> Venue</h2>
-    <p>The Grand Ballroom</p>
-    <p>123 Celebration Ave, Weddington</p>
-  </div>
-  
-  <div class="detail-card">
-    <h2> Ceremony</h2>
-    <p>St. Mary's Cathedral - 15:00</p>
-  </div>
-  
-  <button class="edit-btn">Edit Details</button>
 </div>
+

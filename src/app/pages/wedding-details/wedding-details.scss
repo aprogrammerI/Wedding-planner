@@ -1,0 +1,70 @@
+/* Questionnaire styles, aligned with project palette */
+.card-title {
+  color: var(--color-dark);
+}
+
+.btn-primary {
+  background-color: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+}
+
+.btn-primary:hover {
+  background-color: #f79a89 !important;
+  border-color: #f79a89 !important;
+}
+
+.form-control:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(110, 127, 103, 0.25) !important;
+}
+
+/* Ensure inputs look white inside this page */
+.form-control,
+.form-select,
+textarea.form-control {
+  background-color: #ffffff !important;
+}
+
+/* Timeline styles */
+.timeline {
+  position: relative;
+  margin-left: 12px;
+  padding-left: 40px; /* moved content left while keeping clearance from dot */
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 12px; /* move vertical line further left */
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-muted);
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.timeline-item::before {
+  content: none;
+  display: none;
+}
+
+.timeline-time {
+  min-width: 90px;
+  color: var(--color-dark);
+  margin-left: 0; /* content already offset by timeline padding */
+  line-height: 1.1;
+}
+
+.timeline-content {
+  flex: 1 1 auto;
+  background: #fff;
+  border: 1px solid var(--color-muted);
+  border-radius: 8px;
+  padding: 6px 10px; /* even shorter card */
+}
