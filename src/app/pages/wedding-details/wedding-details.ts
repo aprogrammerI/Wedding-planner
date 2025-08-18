@@ -11,6 +11,8 @@ interface StoredWeddingDetails {
   bestWomen: { firstName: string; lastName: string }[];
   brideGuests: string[];
   groomGuests: string[];
+  weddingDate?: string;
+  weddingLocation?: string;
   events?: ItineraryEvent[];
 }
 
@@ -35,6 +37,10 @@ export class WeddingDetails implements OnInit {
   brideLastName = '';
   groomFirstName = '';
   groomLastName = '';
+
+  // Wedding core info
+  weddingDate = '';
+  weddingLocation = '';
 
   // Wedding party
   bestMen: { firstName: string; lastName: string }[] = [];
@@ -136,6 +142,8 @@ export class WeddingDetails implements OnInit {
       bestWomen: this.bestWomen,
       brideGuests: this.brideGuests,
       groomGuests: this.groomGuests,
+      weddingDate: (this.weddingDate || '').trim(),
+      weddingLocation: (this.weddingLocation || '').trim(),
       events: this.events
     };
     localStorage.setItem(this.storageKey, JSON.stringify(payload));
@@ -157,6 +165,8 @@ export class WeddingDetails implements OnInit {
     this.newBestManLastName = '';
     this.newBestWomanFirstName = '';
     this.newBestWomanLastName = '';
+    this.weddingDate = '';
+    this.weddingLocation = '';
   }
 
   private load(): void {
@@ -168,6 +178,8 @@ export class WeddingDetails implements OnInit {
       this.brideLastName = parsed.brideLastName || '';
       this.groomFirstName = parsed.groomFirstName || '';
       this.groomLastName = parsed.groomLastName || '';
+      this.weddingDate = parsed.weddingDate || '';
+      this.weddingLocation = parsed.weddingLocation || '';
       // Backward compatibility: migrate single fields to arrays if present
       if (Array.isArray(parsed.bestMen)) {
         this.bestMen = parsed.bestMen;

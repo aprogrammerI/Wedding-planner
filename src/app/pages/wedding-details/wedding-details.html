@@ -1,26 +1,56 @@
 <div class="container py-4">
   <div class="row g-3">
-    <!-- Couple Details -->
+    <!-- Bride Details -->
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Bride Details</h5>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">First Name</label>
+              <input class="form-control" [(ngModel)]="brideFirstName" (change)="save()" placeholder="e.g., Jane" />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Last Name</label>
+              <input class="form-control" [(ngModel)]="brideLastName" (change)="save()" placeholder="e.g., Doe" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Groom Details -->
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Groom Details</h5>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">First Name</label>
+              <input class="form-control" [(ngModel)]="groomFirstName" (change)="save()" placeholder="e.g., John" />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Last Name</label>
+              <input class="form-control" [(ngModel)]="groomLastName" (change)="save()" placeholder="e.g., Smith" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wedding Details -->
     <div class="col-12">
       <div class="card">
         <div class="card-body">
-          <h5 class="card-title mb-3">Wedding Details Questionnaire</h5>
+          <h5 class="card-title mb-3">Wedding Details</h5>
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label">Bride's First Name</label>
-              <input class="form-control" [(ngModel)]="brideFirstName" (change)="save()" placeholder="e.g., Jane" />
+              <label class="form-label">Wedding Date</label>
+              <input type="date" class="form-control" [(ngModel)]="weddingDate" (change)="save()" />
             </div>
             <div class="col-md-6">
-              <label class="form-label">Bride's Last Name</label>
-              <input class="form-control" [(ngModel)]="brideLastName" (change)="save()" placeholder="e.g., Doe" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Groom's First Name</label>
-              <input class="form-control" [(ngModel)]="groomFirstName" (change)="save()" placeholder="e.g., John" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Groom's Last Name</label>
-              <input class="form-control" [(ngModel)]="groomLastName" (change)="save()" placeholder="e.g., Smith" />
+              <label class="form-label">Wedding Location</label>
+              <input class="form-control" [(ngModel)]="weddingLocation" (change)="save()" placeholder="e.g., Central Park, NYC" />
             </div>
           </div>
         </div>
@@ -71,42 +101,7 @@
       </div>
     </div>
 
-    <!-- Guests -->
-    <div class="col-md-6">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Bride's Guests</h5>
-          <div class="d-flex gap-2 mb-3">
-            <input class="form-control" [(ngModel)]="newBrideGuest" placeholder="Add guest name" (keyup.enter)="addBrideGuest()" />
-            <button class="btn btn-primary" (click)="addBrideGuest()">Add</button>
-          </div>
-          <ul class="list-group">
-            <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let g of brideGuests; let i = index">
-              <span>{{ g }}</span>
-              <button class="btn btn-sm btn-outline-danger" (click)="removeBrideGuest(i)">Remove</button>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
 
-    <div class="col-md-6">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Groom's Guests</h5>
-          <div class="d-flex gap-2 mb-3">
-            <input class="form-control" [(ngModel)]="newGroomGuest" placeholder="Add guest name" (keyup.enter)="addGroomGuest()" />
-            <button class="btn btn-primary" (click)="addGroomGuest()">Add</button>
-          </div>
-          <ul class="list-group">
-            <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let g of groomGuests; let i = index">
-              <span>{{ g }}</span>
-              <button class="btn btn-sm btn-outline-danger" (click)="removeGroomGuest(i)">Remove</button>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
 
     <!-- Itinerary -->
     <div class="col-12">
