@@ -13,12 +13,12 @@
           No hidden fees! No sign‑up required!
         </p>
         <p class="mt-4">
-          <a routerLink="/register" class="btn btn-lg btn-primary me-2">
+          <button (click)="onCreateProject()" class="btn btn-lg btn-primary me-2">
             Create new wedding project
-          </a>
-          <a routerLink="/login" class="btn btn-lg btn-outline-light">
+          </button>
+          <button *ngIf="!isAuthenticated" (click)="onSignIn()" class="btn btn-lg btn-outline-light">
             Sign In
-          </a>
+          </button>
         </p>
       </div>
       <!-- Illustration Column (optional) -->

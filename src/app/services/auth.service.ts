@@ -99,6 +99,15 @@ export class AuthService {
     const user = this.mockUsers.find(u => u.email === creds.email && u.password === creds.password);
     
     if (user) {
+      // Check if there's a temporary role from registration
+      const tempRole = localStorage.getItem('temp_user_role');
+      if (tempRole) {
+        // Apply the temporary role
+        user.role = tempRole;
+        localStorage.removeItem('temp_user_role'); // Clean up
+        localStorage.setItem('user_role', tempRole);
+      }
+      
       const response: AuthResponse = {
         token: `mock-token-${user.id}`,
         user: { id: user.id, name: user.name, email: user.email, role: user.role || '' }
@@ -108,7 +117,6 @@ export class AuthService {
         delay(500), // Simulate network delay
         tap(response => {
           localStorage.setItem('auth_token', response.token);
-          localStorage.setItem('user_role', response.user.role || '');
           this.currentUserSubject.next(response.user);
         })
       );
@@ -170,7 +178,7 @@ export class AuthService {
     });
   }
 
-  register(user: { name: string; email: string; password: string }): Observable<AuthResponse> {
+  register(user: { name: string; email: string; password: string }): Observable<boolean> {
     // Check if email already exists
     const existingUser = this.mockUsers.find(u => u.email === user.email);
     
@@ -192,18 +200,8 @@ export class AuthService {
     
     this.mockUsers.push(newUser);
     
-    const response: AuthResponse = {
-      token: `mock-token-${newUser.id}`,
-      user: { id: newUser.id, name: newUser.name, email: newUser.email, role: '' }
-    };
-    
-    return of(response).pipe(
-      delay(500), // Simulate network delay
-      tap(response => {
-        localStorage.setItem('auth_token', response.token);
-        this.currentUserSubject.next(response.user);
-      })
-    );
+    // Return success without logging in
+    return of(true).pipe(delay(500));
   }
 
   selectRole(role: string): Observable<boolean> {
@@ -221,8 +219,12 @@ export class AuthService {
       localStorage.setItem('user_role', role);
       
       return of(true).pipe(delay(300));
+    } else {
+      // For users who just registered but aren't logged in yet
+      // Store the role temporarily in localStorage
+      localStorage.setItem('temp_user_role', role);
+      return of(true).pipe(delay(300));
     }
-    return of(false);
   }
 
   logout(): void {

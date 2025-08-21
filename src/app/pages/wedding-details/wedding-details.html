@@ -1,196 +1,295 @@
-<div class="container py-4">
-  <div class="row g-3">
-    <!-- Bride Details -->
-    <div class="col-md-6">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Bride Details</h5>
-          <div class="row g-3">
-            <div class="col-12">
-              <label class="form-label">First Name</label>
-              <input class="form-control" [(ngModel)]="brideFirstName" (change)="save()" placeholder="e.g., Jane" />
+<div class="wedding-details-container">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h1 class="page-title">Wedding Overview</h1>
+        <p class="page-subtitle">Complete overview of your special day</p>
+      </div>
+    </div>
+
+    <!-- Couple Details Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2><i class="fas fa-heart"></i> Couple Details</h2>
+        <button class="btn btn-primary btn-sm" (click)="saveCoupleDetails()">Save</button>
+      </div>
+      
+      <!-- Input Form - shown initially -->
+      <div *ngIf="!showCouplePhoto" class="couple-form">
+        <div class="row">
+          <div class="col-md-6">
+            <h4 class="text-center mb-3">Bride</h4>
+            <div class="form-group mb-3">
+              <label for="brideFirstName">First Name</label>
+              <input type="text" id="brideFirstName" class="form-control" [(ngModel)]="coupleDetails.brideFirstName">
             </div>
-            <div class="col-12">
-              <label class="form-label">Last Name</label>
-              <input class="form-control" [(ngModel)]="brideLastName" (change)="save()" placeholder="e.g., Doe" />
+            <div class="form-group mb-3">
+              <label for="brideLastName">Last Name</label>
+              <input type="text" id="brideLastName" class="form-control" [(ngModel)]="coupleDetails.brideLastName">
+            </div>
+            <div class="form-group mb-3">
+              <label for="brideAge">Age</label>
+              <input type="number" id="brideAge" class="form-control" [(ngModel)]="coupleDetails.brideAge">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <h4 class="text-center mb-3">Groom</h4>
+            <div class="form-group mb-3">
+              <label for="groomFirstName">First Name</label>
+              <input type="text" id="groomFirstName" class="form-control" [(ngModel)]="coupleDetails.groomFirstName">
+            </div>
+            <div class="form-group mb-3">
+              <label for="groomLastName">Last Name</label>
+              <input type="text" id="groomLastName" class="form-control" [(ngModel)]="coupleDetails.groomLastName">
+            </div>
+            <div class="form-group mb-3">
+              <label for="groomAge">Age</label>
+              <input type="number" id="groomAge" class="form-control" [(ngModel)]="coupleDetails.groomAge">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Couple Photo Display - shown after save -->
+      <div *ngIf="showCouplePhoto" class="couple-photo-display">
+        <div class="couple-names">{{ coupleDetails.brideFirstName }} {{ coupleDetails.brideLastName }} & {{ coupleDetails.groomFirstName }} {{ coupleDetails.groomLastName }}</div>
+        <div class="photo-container">
+          <img src="assets/couple-details.png" alt="Couple" class="couple-photo">
+        </div>
+        <div class="edit-button-container">
+          <button class="btn btn-outline-primary btn-sm" (click)="editCoupleDetails()">
+            <i class="fas fa-edit"></i> Edit Details
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Event Information Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2><i class="fas fa-calendar-alt"></i> Event Information</h2>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <label for="eventDate">Wedding Date</label>
+          <div class="date-input-container">
+            <div *ngIf="!eventInformation.date" class="date-input">
+              <input type="date" id="eventDate" class="form-control" [(ngModel)]="eventInformation.date">
+            </div>
+            <div *ngIf="eventInformation.date" class="selected-date">
+              {{ eventInformation.date | date:'longDate' }}
+              <button class="btn btn-outline-primary btn-sm edit-btn" (click)="editEventDate()">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label for="eventLocation">Location</label>
+          <div class="location-input-container">
+            <div *ngIf="!eventInformation.location" class="location-input">
+              <input type="text" id="eventLocation" class="form-control" [(ngModel)]="eventInformation.location" placeholder="City, State" (keyup.enter)="saveLocation()">
+            </div>
+            <div *ngIf="eventInformation.location" class="selected-location">
+              {{ eventInformation.location }}
+              <button class="btn btn-outline-primary btn-sm edit-btn" (click)="editLocation()">
+                <i class="fas fa-edit"></i> Edit
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Groom Details -->
-    <div class="col-md-6">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Groom Details</h5>
-          <div class="row g-3">
-            <div class="col-12">
-              <label class="form-label">First Name</label>
-              <input class="form-control" [(ngModel)]="groomFirstName" (change)="save()" placeholder="e.g., John" />
-            </div>
-            <div class="col-12">
-              <label class="form-label">Last Name</label>
-              <input class="form-control" [(ngModel)]="groomLastName" (change)="save()" placeholder="e.g., Smith" />
-            </div>
+    <!-- Guests Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2><i class="fas fa-users"></i> Guests</h2>
+        <a routerLink="/guest-list" class="btn btn-outline-primary btn-sm">Manage Guests</a>
+      </div>
+      <div class="row text-center">
+        <div class="col-md-6">
+          <div class="guest-count-card bride-guests">
+            <h3>{{ guestSummary.brideGuests }}</h3>
+            <p>Bride's Guests</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="guest-count-card groom-guests">
+            <h3>{{ guestSummary.groomGuests }}</h3>
+            <p>Groom's Guests</p>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-md-6">
+          <div class="guest-summary-item">
+            <span class="label">Wedding Party:</span>
+            <span class="value">{{ guestSummary.totalGuests }} total guests</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="guest-summary-item">
+            <span class="label">Confirmed RSVPs:</span>
+            <span class="value">{{ guestSummary.confirmedRSVPs }}</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Wedding Details -->
-    <div class="col-12">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Wedding Details</h5>
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">Wedding Date</label>
-              <input type="date" class="form-control" [(ngModel)]="weddingDate" (change)="save()" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Wedding Location</label>
-              <input class="form-control" [(ngModel)]="weddingLocation" (change)="save()" placeholder="e.g., Central Park, NYC" />
-            </div>
+    <!-- Checklist Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2><i class="fas fa-tasks"></i> Checklist</h2>
+        <a routerLink="/tasks" class="btn btn-outline-primary btn-sm">Manage Tasks</a>
+      </div>
+      <div class="progress-section">
+        <div class="progress-info">
+          <span>{{ checklistProgress.completedTasks }} of {{ checklistProgress.totalTasks }} tasks completed</span>
+          <span class="progress-percentage">{{ checklistProgress.progressPercentage }}%</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" 
+               [style.width.%]="checklistProgress.progressPercentage" 
+               [attr.aria-valuenow]="checklistProgress.progressPercentage" 
+               aria-valuemin="0" aria-valuemax="100">
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Best Men / Best Women (multiple) -->
-    <div class="col-12">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Best Man & Best Woman</h5>
-          <div class="row g-4">
-            <!-- Best Men -->
-            <div class="col-md-6">
-              <h6 class="mb-2">Best Men</h6>
-              <div class="d-flex gap-2 mb-2">
-                <input class="form-control" [(ngModel)]="newBestManFirstName" placeholder="First name" (keyup.enter)="addBestMan()" />
-                <input class="form-control" [(ngModel)]="newBestManLastName" placeholder="Last name" (keyup.enter)="addBestMan()" />
-                <button class="btn btn-primary" (click)="addBestMan()">Add</button>
+    <!-- Budget Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2><i class="fas fa-dollar-sign"></i> Budget</h2>
+        <a routerLink="/budget-tracker" class="btn btn-outline-primary btn-sm">Manage Budget</a>
+      </div>
+      <div class="budget-overview">
+        <div class="row text-center">
+          <div class="col-md-4">
+            <div class="budget-item">
+              <h4>${{ budgetOverview.totalBudget.toLocaleString() }}</h4>
+              <p>Total Budget</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="budget-item spent">
+              <h4>${{ budgetOverview.spentAmount.toLocaleString() }}</h4>
+              <p>Spent</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="budget-item remaining">
+              <h4>${{ budgetOverview.remainingAmount.toLocaleString() }}</h4>
+              <p>Remaining</p>
+            </div>
+          </div>
+        </div>
+        <div class="budget-progress mt-3">
+          <div class="progress">
+            <div class="progress-bar bg-success" role="progressbar" 
+                 [style.width.%]="budgetOverview.progressPercentage" 
+                 [attr.aria-valuenow]="budgetOverview.progressPercentage" 
+                 aria-valuemin="0" aria-valuemax="100">
+            </div>
+          </div>
+          <small class="text-muted">Budget utilization: {{ budgetOverview.progressPercentage }}%</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Event Itinerary Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2><i class="fas fa-clock"></i> Event Itinerary</h2>
+      </div>
+      
+      <div class="itinerary-timeline-container">
+        <div class="itinerary-timeline">
+          <div class="timeline-item" *ngFor="let item of eventItinerary; let i = index">
+            <div class="timeline-time">
+              <span *ngIf="!item.isEditing">{{ item.time }}</span>
+              <input *ngIf="item.isEditing" type="time" class="form-control form-control-sm" 
+                     [value]="item.time" (input)="updateItineraryItem(i, 'time', $event)">
+            </div>
+            <div class="timeline-content">
+              <h5 *ngIf="!item.isEditing">{{ item.event }}</h5>
+              <input *ngIf="item.isEditing" type="text" class="form-control form-control-sm mb-1" 
+                     [value]="item.event" (input)="updateItineraryItem(i, 'event', $event)">
+              <p *ngIf="!item.isEditing">{{ item.description }}</p>
+              <input *ngIf="item.isEditing" type="text" class="form-control form-control-sm" 
+                     [value]="item.description" (input)="updateItineraryItem(i, 'description', $event)">
+            </div>
+            <div class="timeline-actions">
+              <button *ngIf="!item.isEditing" class="edit-icon" (click)="startEditItem(i)">
+                <i class="fas fa-edit"></i>
+              </button>
+              <div *ngIf="item.isEditing" class="edit-actions">
+                <button class="btn-success" (click)="saveItem(i)">
+                  <i class="fas fa-check"></i>
+                </button>
+                <button class="delete-icon" (click)="cancelEditItem(i)">
+                  <i class="fas fa-times"></i>
+                </button>
               </div>
-              <ul class="list-group">
-                <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let p of bestMen; let i = index">
-                  <span>{{ p.firstName }} {{ p.lastName }}</span>
-                  <button class="btn btn-sm btn-outline-danger" (click)="removeBestMan(i)">Remove</button>
-                </li>
-                <li *ngIf="bestMen.length === 0" class="list-group-item text-muted">No best men added yet.</li>
-              </ul>
             </div>
-
-            <!-- Best Women -->
-            <div class="col-md-6">
-              <h6 class="mb-2">Best Women</h6>
-              <div class="d-flex gap-2 mb-2">
-                <input class="form-control" [(ngModel)]="newBestWomanFirstName" placeholder="First name" (keyup.enter)="addBestWoman()" />
-                <input class="form-control" [(ngModel)]="newBestWomanLastName" placeholder="Last name" (keyup.enter)="addBestWoman()" />
-                <button class="btn btn-primary" (click)="addBestWoman()">Add</button>
-              </div>
-              <ul class="list-group">
-                <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let p of bestWomen; let i = index">
-                  <span>{{ p.firstName }} {{ p.lastName }}</span>
-                  <button class="btn btn-sm btn-outline-danger" (click)="removeBestWoman(i)">Remove</button>
-                </li>
-                <li *ngIf="bestWomen.length === 0" class="list-group-item text-muted">No best women added yet.</li>
-              </ul>
-            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Add New Item Form -->
+      <div class="add-item-form mt-3">
+        <h6>Add New Item</h6>
+        <div class="form-row">
+          <div class="col-md-3">
+            <input type="time" class="form-control form-control-sm" 
+                   [(ngModel)]="newItineraryItem.time" placeholder="Time">
+          </div>
+          <div class="col-md-4">
+            <input type="text" class="form-control form-control-sm" 
+                   [(ngModel)]="newItineraryItem.event" placeholder="Event">
+          </div>
+          <div class="col-md-4">
+            <input type="text" class="form-control form-control-sm" 
+                   [(ngModel)]="newItineraryItem.description" placeholder="Description">
+          </div>
+          <div class="col-md-1">
+            <button class="btn btn-sm btn-primary" (click)="addItineraryItem()">
+              <i class="fas fa-plus"></i>
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-
-
-    <!-- Itinerary -->
-    <div class="col-12">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Event Itinerary</h5>
-          <div class="row g-2 align-items-end mb-3">
-            <div class="col-md-3">
-              <label class="form-label">Date</label>
-              <input type="date" class="form-control" [(ngModel)]="newEventDate" />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Start</label>
-              <input type="time" class="form-control" [(ngModel)]="newEventStart" />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">End</label>
-              <input type="time" class="form-control" [(ngModel)]="newEventEnd" />
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Title</label>
-              <input class="form-control" [(ngModel)]="newEventTitle" placeholder="e.g., Ceremony" />
-            </div>
-            <div class="col-md-2 d-grid">
-              <button class="btn btn-primary" (click)="addEvent()">Add Event</button>
-            </div>
-          </div>
-
-          <!-- Timeline -->
-          <div class="timeline">
-            <div class="timeline-item" *ngFor="let e of sortedEvents">
-              <div class="timeline-time">
-                <div>{{ e.date | date:'MMM d' }}</div>
-                <div class="small text-muted">{{ e.start }} - {{ e.end }}</div>
-              </div>
-              <div class="timeline-content">
-                <div class="d-flex justify-content-between align-items-center">
-                  <strong>{{ e.title }}</strong>
-                  <button class="btn btn-sm btn-outline-danger" (click)="removeEvent(e.id)">Delete</button>
-                </div>
-              </div>
-            </div>
-            <div *ngIf="events.length === 0" class="text-muted">No events yet. Add your first one above.</div>
-          </div>
-        </div>
+    <!-- Post Wedding Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2><i class="fas fa-camera"></i> Post Wedding</h2>
       </div>
-    </div>
-    <!-- Budget -->
-    <div class="col-12">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Budget</h5>
-          <div class="row g-3 align-items-end">
-            <div class="col-md-3">
-              <label class="form-label">Current total budget</label>
-              <input class="form-control" [value]="totalBudget | number:'1.0-2'" readonly />
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Set new total</label>
-              <input type="number" min="0" class="form-control" [(ngModel)]="newBudgetValue" placeholder="e.g., 10000" />
-            </div>
-            <div class="col-md-2 d-grid">
-              <button class="btn btn-primary" (click)="setBudget()">Set Budget</button>
-            </div>
-          </div>
-          <hr />
-          <div class="row g-3 align-items-end">
-            <div class="col-md-3">
-              <label class="form-label">Adjust amount</label>
-              <input type="number" min="0" class="form-control" [(ngModel)]="adjustBudgetAmount" placeholder="e.g., 500" />
-            </div>
-            <div class="col-md-2 d-grid">
-              <button class="btn btn-primary" (click)="addBudget()">Add</button>
-            </div>
-            <div class="col-md-2 d-grid">
-              <button class="btn btn-outline-secondary" (click)="removeBudget()">Remove</button>
+      <div class="photo-upload-section">
+        <div class="upload-area">
+          <input type="file" id="photoUpload" multiple accept="image/*" (change)="onPhotoSelect($event)" class="d-none">
+          <label for="photoUpload" class="upload-button">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>Upload Photos</span>
+          </label>
+        </div>
+        
+        <div class="photo-gallery" *ngIf="photoPreviewUrls.length > 0">
+          <h5 class="mb-3">Uploaded Photos</h5>
+          <div class="row">
+            <div class="col-md-3 mb-3" *ngFor="let url of photoPreviewUrls; let i = index">
+              <div class="photo-item">
+                <img [src]="url" alt="Wedding photo" class="img-fluid">
+                <button class="remove-photo" (click)="removePhoto(i)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="col-12">
-      <div class="d-flex gap-2">
-        <button class="btn btn-primary" (click)="save()">Save</button>
-        <button class="btn btn-outline-secondary" (click)="clearAll()">Clear All</button>
       </div>
     </div>
   </div>
 </div>
-

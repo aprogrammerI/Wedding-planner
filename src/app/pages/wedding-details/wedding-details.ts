@@ -1,296 +1,307 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { GuestService, Guest } from '../../services/guest.service';
+import { TaskService, Task } from '../../services/task.service';
+import { BudgetService, Expense } from '../../services/budget.service';
 
-interface StoredWeddingDetails {
+interface CoupleDetails {
   brideFirstName: string;
   brideLastName: string;
+  brideAge: number;
   groomFirstName: string;
   groomLastName: string;
-  bestMen: { firstName: string; lastName: string }[];
-  bestWomen: { firstName: string; lastName: string }[];
-  brideGuests: string[];
-  groomGuests: string[];
-  weddingDate?: string;
-  weddingLocation?: string;
-  events?: ItineraryEvent[];
+  groomAge: number;
 }
 
-interface ItineraryEvent {
-  id: number;
-  date: string;   // YYYY-MM-DD
-  start: string;  // HH:mm
-  end?: string;   // HH:mm
-  title: string;
+interface EventInformation {
+  date: string;
+  location: string;
+}
+
+interface GuestSummary {
+  brideGuests: number;
+  groomGuests: number;
+  totalGuests: number;
+  confirmedRSVPs: number;
+}
+
+interface ChecklistProgress {
+  totalTasks: number;
+  completedTasks: number;
+  progressPercentage: number;
+}
+
+interface BudgetOverview {
+  totalBudget: number;
+  spentAmount: number;
+  remainingAmount: number;
+  progressPercentage: number;
+}
+
+interface EventItinerary {
+  time: string;
+  event: string;
+  description: string;
+  isEditing?: boolean;
 }
 
 @Component({
   selector: 'app-wedding-details',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './wedding-details.html',
   styleUrls: ['./wedding-details.scss']
 })
 export class WeddingDetails implements OnInit {
-  // Couple details
-  brideFirstName = '';
-  brideLastName = '';
-  groomFirstName = '';
-  groomLastName = '';
+  coupleDetails: CoupleDetails = {
+    brideFirstName: '',
+    brideLastName: '',
+    brideAge: 0,
+    groomFirstName: '',
+    groomLastName: '',
+    groomAge: 0
+  };
 
-  // Wedding core info
-  weddingDate = '';
-  weddingLocation = '';
+  eventInformation: EventInformation = {
+    date: '',
+    location: ''
+  };
 
-  // Wedding party
-  bestMen: { firstName: string; lastName: string }[] = [];
-  bestWomen: { firstName: string; lastName: string }[] = [];
-  newBestManFirstName = '';
-  newBestManLastName = '';
-  newBestWomanFirstName = '';
-  newBestWomanLastName = '';
+  // Guest summary - will be populated from real data
+  guestSummary: GuestSummary = {
+    brideGuests: 0,
+    groomGuests: 0,
+    totalGuests: 0,
+    confirmedRSVPs: 0
+  };
 
-  // Guests
-  brideGuests: string[] = [];
-  groomGuests: string[] = [];
-  newBrideGuest = '';
-  newGroomGuest = '';
+  // Checklist progress - will be populated from real data
+  checklistProgress: ChecklistProgress = {
+    totalTasks: 0,
+    completedTasks: 0,
+    progressPercentage: 0
+  };
 
-  private storageKey = 'weddingDetails';
-  // Budget
-  budgetKey = 'userBudget';
-  totalBudget: number = 0;
-  newBudgetValue: number | null = null;
-  adjustBudgetAmount: number | null = null;
+  // Budget overview - will be populated from real data
+  budgetOverview: BudgetOverview = {
+    totalBudget: 0,
+    spentAmount: 0,
+    remainingAmount: 0,
+    progressPercentage: 0
+  };
 
-  // Itinerary
-  events: ItineraryEvent[] = [];
-  newEventDate: string = '';
-  newEventStart: string = '';
-  newEventEnd: string = '';
-  newEventTitle: string = '';
-  private nextEventId: number = 1;
+  eventItinerary: EventItinerary[] = [
+    { time: '2:00 PM', event: 'Ceremony', description: 'Wedding ceremony at the venue', isEditing: false },
+    { time: '3:00 PM', event: 'Cocktail Hour', description: 'Drinks and appetizers', isEditing: false },
+    { time: '4:00 PM', event: 'Reception', description: 'Dinner and dancing', isEditing: false },
+    { time: '5:00 PM', event: 'First Dance', description: 'Couple\'s first dance', isEditing: false },
+    { time: '6:00 PM', event: 'Cake Cutting', description: 'Wedding cake ceremony', isEditing: false },
+    { time: '7:00 PM', event: 'Bouquet Toss', description: 'Traditional bouquet toss', isEditing: false },
+    { time: '8:00 PM', event: 'Garter Toss', description: 'Traditional garter toss', isEditing: false },
+    { time: '9:00 PM', event: 'Open Dancing', description: 'Party continues', isEditing: false },
+    { time: '11:00 PM', event: 'Grand Exit', description: 'Sparkler send-off', isEditing: false }
+  ];
 
-  ngOnInit(): void {
-    this.load();
-    this.loadBudget();
+  selectedPhotos: File[] = [];
+  photoPreviewUrls: string[] = [];
+  showCouplePhoto = false;
+  showDatePicker = false;
+  showLocationInput = false;
+  
+  newItineraryItem: EventItinerary = { time: '', event: '', description: '' };
+
+  constructor(
+    private authService: AuthService,
+    private guestService: GuestService,
+    private taskService: TaskService,
+    private budgetService: BudgetService
+  ) {}
+
+  ngOnInit() {
+    this.loadRealData();
   }
 
-  addBrideGuest(): void {
-    const value = (this.newBrideGuest || '').trim();
-    if (!value) return;
-    this.brideGuests = [...this.brideGuests, value];
-    this.newBrideGuest = '';
-    this.save();
-  }
+  private calculateGuestSummary(guests: Guest[]) {
+    const brideGuests = guests.filter(g => g.side === 'bride').length;
+    const groomGuests = guests.filter(g => g.side === 'groom').length;
+    const confirmedRSVPs = guests.filter(g => g.status === 'accepted').length;
 
-  removeBrideGuest(index: number): void {
-    this.brideGuests = this.brideGuests.filter((_, i) => i !== index);
-    this.save();
-  }
-
-  addGroomGuest(): void {
-    const value = (this.newGroomGuest || '').trim();
-    if (!value) return;
-    this.groomGuests = [...this.groomGuests, value];
-    this.newGroomGuest = '';
-    this.save();
-  }
-
-  removeGroomGuest(index: number): void {
-    this.groomGuests = this.groomGuests.filter((_, i) => i !== index);
-    this.save();
-  }
-
-  addBestMan(): void {
-    const first = (this.newBestManFirstName || '').trim();
-    const last = (this.newBestManLastName || '').trim();
-    if (!first && !last) return;
-    this.bestMen = [...this.bestMen, { firstName: first, lastName: last }];
-    this.newBestManFirstName = '';
-    this.newBestManLastName = '';
-    this.save();
-  }
-
-  removeBestMan(index: number): void {
-    this.bestMen = this.bestMen.filter((_, i) => i !== index);
-    this.save();
-  }
-
-  addBestWoman(): void {
-    const first = (this.newBestWomanFirstName || '').trim();
-    const last = (this.newBestWomanLastName || '').trim();
-    if (!first && !last) return;
-    this.bestWomen = [...this.bestWomen, { firstName: first, lastName: last }];
-    this.newBestWomanFirstName = '';
-    this.newBestWomanLastName = '';
-    this.save();
-  }
-
-  removeBestWoman(index: number): void {
-    this.bestWomen = this.bestWomen.filter((_, i) => i !== index);
-    this.save();
-  }
-
-  save(): void {
-    const payload: StoredWeddingDetails = {
-      brideFirstName: (this.brideFirstName || '').trim(),
-      brideLastName: (this.brideLastName || '').trim(),
-      groomFirstName: (this.groomFirstName || '').trim(),
-      groomLastName: (this.groomLastName || '').trim(),
-      bestMen: this.bestMen,
-      bestWomen: this.bestWomen,
-      brideGuests: this.brideGuests,
-      groomGuests: this.groomGuests,
-      weddingDate: (this.weddingDate || '').trim(),
-      weddingLocation: (this.weddingLocation || '').trim(),
-      events: this.events
+    this.guestSummary = {
+      brideGuests,
+      groomGuests,
+      totalGuests: guests.length,
+      confirmedRSVPs
     };
-    localStorage.setItem(this.storageKey, JSON.stringify(payload));
   }
 
-  clearAll(): void {
-    localStorage.removeItem(this.storageKey);
-    this.brideFirstName = '';
-    this.brideLastName = '';
-    this.groomFirstName = '';
-    this.groomLastName = '';
-    this.bestMen = [];
-    this.bestWomen = [];
-    this.brideGuests = [];
-    this.groomGuests = [];
-    this.newBrideGuest = '';
-    this.newGroomGuest = '';
-    this.newBestManFirstName = '';
-    this.newBestManLastName = '';
-    this.newBestWomanFirstName = '';
-    this.newBestWomanLastName = '';
-    this.weddingDate = '';
-    this.weddingLocation = '';
+  private calculateTaskProgress(tasks: Task[]) {
+    const completedTasks = tasks.filter(t => t.done).length;
+    const totalTasks = tasks.length;
+    const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+    this.checklistProgress = {
+      completedTasks,
+      totalTasks,
+      progressPercentage
+    };
   }
 
-  private load(): void {
-    const raw = localStorage.getItem(this.storageKey);
-    if (!raw) return;
-    try {
-      const parsed: any = JSON.parse(raw);
-      this.brideFirstName = parsed.brideFirstName || '';
-      this.brideLastName = parsed.brideLastName || '';
-      this.groomFirstName = parsed.groomFirstName || '';
-      this.groomLastName = parsed.groomLastName || '';
-      this.weddingDate = parsed.weddingDate || '';
-      this.weddingLocation = parsed.weddingLocation || '';
-      // Backward compatibility: migrate single fields to arrays if present
-      if (Array.isArray(parsed.bestMen)) {
-        this.bestMen = parsed.bestMen;
-      } else if (parsed.bestManFirstName || parsed.bestManLastName) {
-        this.bestMen = [{ firstName: parsed.bestManFirstName || '', lastName: parsed.bestManLastName || '' }];
-      } else {
-        this.bestMen = [];
+  private calculateBudgetOverview(expenses: Expense[]) {
+    const spentAmount = expenses.reduce((total, expense) => total + expense.amount, 0);
+    // Get the actual budget from localStorage (same as budget page)
+    const totalBudget = Number(localStorage.getItem('userBudget')) || 0;
+    const remainingAmount = Math.max(0, totalBudget - spentAmount);
+    const progressPercentage = totalBudget > 0 ? Math.min(100, Math.round((spentAmount / totalBudget) * 100)) : 0;
+
+    this.budgetOverview = {
+      totalBudget,
+      spentAmount,
+      remainingAmount,
+      progressPercentage
+    };
+  }
+
+  private loadRealData() {
+    // Load guest data
+    this.guestService.list().subscribe({
+      next: (guests) => {
+        this.calculateGuestSummary(guests);
+      },
+      error: (error) => {
+        console.error('Error loading guest data:', error);
+        // Keep default values if there's an error
       }
-      if (Array.isArray(parsed.bestWomen)) {
-        this.bestWomen = parsed.bestWomen;
-      } else if (parsed.bestWomanFirstName || parsed.bestWomanLastName) {
-        this.bestWomen = [{ firstName: parsed.bestWomanFirstName || '', lastName: parsed.bestWomanLastName || '' }];
-      } else {
-        this.bestWomen = [];
+    });
+
+    // Load task data
+    this.taskService.list().subscribe({
+      next: (tasks) => {
+        this.calculateTaskProgress(tasks);
+      },
+      error: (error) => {
+        console.error('Error loading task data:', error);
+        // Keep default values if there's an error
       }
-      this.brideGuests = Array.isArray(parsed.brideGuests) ? parsed.brideGuests : [];
-      this.groomGuests = Array.isArray(parsed.groomGuests) ? parsed.groomGuests : [];
-      this.events = Array.isArray(parsed.events) ? parsed.events : [];
-      this.nextEventId = (this.events.reduce((m: number, e: ItineraryEvent) => Math.max(m, e.id), 0) || 0) + 1;
-    } catch {
-      // ignore malformed storage
-    }
-  }
+    });
 
-  // Budget handlers
-  private loadBudget(): void {
-    const val = localStorage.getItem(this.budgetKey);
-    this.totalBudget = val ? Number(val) : 0;
-  }
-
-  setBudget(): void {
-    if (this.newBudgetValue == null || isNaN(this.newBudgetValue as any)) return;
-    const value = Math.max(0, Number(this.newBudgetValue));
-    this.totalBudget = value;
-    this.saveBudget();
-    this.newBudgetValue = null;
-  }
-
-  addBudget(): void {
-    if (this.adjustBudgetAmount == null || isNaN(this.adjustBudgetAmount as any)) return;
-    const amt = Math.max(0, Number(this.adjustBudgetAmount));
-    this.totalBudget = this.totalBudget + amt;
-    this.saveBudget();
-    this.adjustBudgetAmount = null;
-  }
-
-  removeBudget(): void {
-    if (this.adjustBudgetAmount == null || isNaN(this.adjustBudgetAmount as any)) return;
-    const amt = Math.max(0, Number(this.adjustBudgetAmount));
-    this.totalBudget = Math.max(0, this.totalBudget - amt);
-    this.saveBudget();
-    this.adjustBudgetAmount = null;
-  }
-
-  private saveBudget(): void {
-    localStorage.setItem(this.budgetKey, String(this.totalBudget));
-  }
-
-  // Itinerary handlers
-  get sortedEvents(): ItineraryEvent[] {
-    return [...this.events].sort((a, b) => {
-      const aKey = `${a.date} ${a.start}`;
-      const bKey = `${b.date} ${b.start}`;
-      return aKey.localeCompare(bKey);
+    // Load budget data
+    this.budgetService.list().subscribe({
+      next: (expenses) => {
+        this.calculateBudgetOverview(expenses);
+      },
+      error: (error) => {
+        console.error('Error loading budget data:', error);
+        // Keep default values if there's an error
+      }
     });
   }
 
-  addEvent(): void {
-    const date = (this.newEventDate || '').trim();
-    const start = (this.newEventStart || '').trim();
-    const title = (this.newEventTitle || '').trim();
-    if (!date || !start || !title) return;
-    const startMin = this.toMinutes(start);
-    const endStr = (this.newEventEnd || '').trim();
-    const endMin = endStr ? this.toMinutes(endStr) : startMin;
-    if (endMin < startMin) {
-      alert('End time must be after start time.');
-      return;
+  onPhotoSelect(event: any) {
+    const files = event.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        this.selectedPhotos.push(file);
+        
+        // Create preview URL
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.photoPreviewUrls.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
     }
-    const overlaps = this.events.some(e => e.date === date && this.isOverlap(startMin, endMin, this.toMinutes(e.start), this.toMinutes(e.end || e.start)));
-    if (overlaps) {
-      alert('This event overlaps with an existing one. Please adjust the time.');
-      return;
+  }
+
+  removePhoto(index: number) {
+    this.selectedPhotos.splice(index, 1);
+    this.photoPreviewUrls.splice(index, 1);
+  }
+
+  saveCoupleDetails() {
+    // Save couple details logic here
+    console.log('Couple details saved:', this.coupleDetails);
+    
+    // Show the couple photo with names
+    this.showCouplePhoto = true;
+  }
+
+  editCoupleDetails() {
+    // Hide the photo and return to edit mode
+    this.showCouplePhoto = false;
+  }
+
+  saveEventInformation() {
+    // Save event information logic here
+    console.log('Event information saved:', this.eventInformation);
+  }
+
+  editEventDate() {
+    this.eventInformation.date = '';
+  }
+
+  saveLocation() {
+    // Location is automatically saved when Enter is pressed due to ngModel binding
+    // This method can be used for any additional logic if needed
+  }
+
+  editLocation() {
+    this.eventInformation.location = '';
+  }
+
+  toggleDatePicker(event: Event) {
+    event.preventDefault();
+    this.showDatePicker = !this.showDatePicker;
+    if (this.showDatePicker) {
+      this.showLocationInput = false; // Close location input if open
     }
-    const evt: ItineraryEvent = {
-      id: this.nextEventId++,
-      date,
-      start,
-      end: endStr || undefined,
-      title
-    };
-    this.events = [...this.events, evt];
-    this.newEventDate = '';
-    this.newEventStart = '';
-    this.newEventEnd = '';
-    this.newEventTitle = '';
-    this.save();
   }
 
-  removeEvent(id: number): void {
-    this.events = this.events.filter(e => e.id !== id);
-    this.save();
+  toggleLocationInput(event: Event) {
+    event.preventDefault();
+    this.showLocationInput = !this.showLocationInput;
+    if (this.showLocationInput) {
+      this.showDatePicker = false; // Close date picker if open
+    }
   }
 
-  private toMinutes(hhmm: string): number {
-    const [h, m] = hhmm.split(':').map(n => Number(n));
-    return h * 60 + (m || 0);
+  // Itinerary editing methods
+  startEditItem(index: number) {
+    this.eventItinerary[index].isEditing = true;
   }
 
-  private isOverlap(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
-    return aStart < bEnd && aEnd > bStart;
+  saveItem(index: number) {
+    this.eventItinerary[index].isEditing = false;
+  }
+
+  cancelEditItem(index: number) {
+    // Reset to original values if needed
+    this.eventItinerary[index].isEditing = false;
+  }
+
+  addItineraryItem() {
+    if (this.newItineraryItem.time && this.newItineraryItem.event && this.newItineraryItem.description) {
+      this.eventItinerary.push({ 
+        ...this.newItineraryItem, 
+        isEditing: false 
+      });
+      this.newItineraryItem = { time: '', event: '', description: '' };
+    }
+  }
+
+  removeItineraryItem(index: number) {
+    this.eventItinerary.splice(index, 1);
+  }
+
+  updateItineraryItem(index: number, field: keyof EventItinerary, event: any) {
+    if (field !== 'isEditing') {
+      const value = event.target?.value;
+      if (value !== undefined) {
+        this.eventItinerary[index][field] = value;
+      }
+    }
   }
 }
-

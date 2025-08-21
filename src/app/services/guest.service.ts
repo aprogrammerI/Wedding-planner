@@ -7,6 +7,7 @@ export interface Guest {
   name: string;
   status: 'pending' | 'accepted' | 'declined';
   side: 'bride' | 'groom';
+  role?: 'bridesmaid' | 'best man' | 'parent' | 'relative' | 'friend' | 'guest';
   tableNumber?: number;
   mealPlan?: string;
   comments?: string;
@@ -18,11 +19,11 @@ export interface Guest {
 })
 export class GuestService {
   private guests: Guest[] = [
-    { id: 1, name: 'John Doe', status: 'accepted', side: 'bride', tableNumber: 1, mealPlan: 'Chicken', comments: 'No onions' },
-    { id: 2, name: 'Jane Smith', status: 'pending', side: 'bride', tableNumber: 2, mealPlan: 'Vegetarian', comments: '' },
-    { id: 3, name: 'Mike Johnson', status: 'declined', side: 'groom', tableNumber: 3, mealPlan: 'Beef', comments: 'Allergic to nuts' },
-    { id: 4, name: 'Sarah Wilson', status: 'accepted', side: 'groom', tableNumber: 1, mealPlan: 'Fish', comments: '' },
-    { id: 5, name: 'David Brown', status: 'pending', side: 'bride', tableNumber: 2, mealPlan: '', comments: '' }
+    { id: 1, name: 'John Doe', status: 'accepted', side: 'bride', role: 'relative', tableNumber: 1, mealPlan: 'Chicken', comments: 'No onions' },
+    { id: 2, name: 'Jane Smith', status: 'pending', side: 'bride', role: 'bridesmaid', tableNumber: 2, mealPlan: 'Vegetarian', comments: '' },
+    { id: 3, name: 'Mike Johnson', status: 'declined', side: 'groom', role: 'best man', tableNumber: 3, mealPlan: 'Beef', comments: 'Allergic to nuts' },
+    { id: 4, name: 'Sarah Wilson', status: 'accepted', side: 'groom', role: 'parent', tableNumber: 1, mealPlan: 'Fish', comments: '' },
+    { id: 5, name: 'David Brown', status: 'pending', side: 'bride', role: 'friend', tableNumber: 2, mealPlan: '', comments: '' }
   ];
 
   private nextId = 6;

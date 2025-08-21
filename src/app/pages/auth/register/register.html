@@ -8,7 +8,7 @@
     </div>
 
     <!-- Registration Form -->
-    <form (ngSubmit)="register()" #registerForm="ngForm" novalidate>
+    <form *ngIf="!showRoleSelection" (ngSubmit)="register()" #registerForm="ngForm" novalidate>
       <div class="mb-3">
         <label for="name" class="form-label">Name</label>
         <input
@@ -45,11 +45,38 @@
       <button
         type="submit"
         class="btn btn-primary w-100"
-        [disabled]="registerForm.invalid"
+        [disabled]="registerForm.invalid || isRegistering"
       >
-        Register
+        <span *ngIf="isRegistering">Registering...</span>
+        <span *ngIf="!isRegistering">Register</span>
       </button>
     </form>
+
+    <!-- Role Selection -->
+    <div *ngIf="showRoleSelection" class="role-selection">
+      <h3 class="text-center mb-4">Choose Your Role</h3>
+      <p class="text-center text-muted mb-4">Select the role that best describes you in this wedding</p>
+      
+      <div class="roles-grid">
+        <div 
+          *ngFor="let role of availableRoles" 
+          class="role-card"
+          [class.selected]="selectedRole === role.role"
+          [class.disabled]="isRoleSelecting"
+          (click)="!isRoleSelecting && selectRole(role.role)"
+        >
+          <div class="role-icon">
+            <img [src]="getRoleIcon(role)" [alt]="role.displayName" />
+          </div>
+          <h4 class="role-title">{{ role.displayName }}</h4>
+          <p class="role-description">{{ role.description }}</p>
+          
+          <div *ngIf="isRoleSelecting && selectedRole === role.role" class="loading-spinner">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Login Link -->
     <p class="text-center mt-3 mb-0">

@@ -1,6 +1,6 @@
 import { Component, OnInit }       from '@angular/core';
 import { CommonModule }    from '@angular/common';
-import { RouterLink }      from '@angular/router';
+import { RouterLink, Router }      from '@angular/router';
 import { AuthService }     from '../../services/auth.service';
 
 interface Card {
@@ -45,23 +45,38 @@ export class Home implements OnInit {
       text: 'Manage all your wedding details in one place - venue, date, theme, and more.', 
       link: '/wedding-details', 
       cta: 'Wedding Details →' 
-    },
-    { 
-      title: 'Dashboard', 
-      text: 'Get an overview of all your wedding planning progress and upcoming tasks.', 
-      link: '/dashboard', 
-      cta: 'Dashboard →' 
     }
   ];
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.checkAuthStatus();
+    // Subscribe to auth changes to make it reactive
+    this.authService.currentUser$.subscribe(() => {
+      this.checkAuthStatus();
+    });
   }
 
   checkAuthStatus() {
     this.isAuthenticated = this.authService.isAuthenticated();
     this.hasRole = this.authService.hasRole();
+  }
+
+  onCreateProject() {
+    if (this.isAuthenticated) {
+      // If logged in, go to wedding details
+      this.router.navigate(['/wedding-details']);
+    } else {
+      // If not logged in, go to register
+      this.router.navigate(['/register']);
+    }
+  }
+
+  onSignIn() {
+    this.router.navigate(['/login']);
   }
 }

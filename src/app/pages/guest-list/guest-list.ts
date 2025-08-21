@@ -14,11 +14,15 @@ import { MatIconModule } from '@angular/material/icon';
 export class GuestList implements OnInit {
   guests: Guest[] = [];
   newBrideName = '';
+  newBrideRole: 'bridesmaid' | 'best man' | 'parent' | 'relative' | 'friend' | 'guest' = 'guest';
   newGroomName = '';
+  newGroomRole: 'bridesmaid' | 'best man' | 'parent' | 'relative' | 'friend' | 'guest' = 'guest';
   viewMode: 'add' | 'details' = 'add';
   editingGuestId: number | null = null;
   editDraft: Partial<Guest> = {};
   rsvpIconFilter = 'invert(77%) sepia(13%) saturate(1162%) hue-rotate(314deg) brightness(101%) contrast(92%)'; // #F9AFA0
+  roles = ['bridesmaid', 'best man', 'parent', 'relative', 'friend', 'guest'] as const;
+  sortOption: 'alphabetical' | 'side' | 'role' | 'rsvps' = 'alphabetical';
 
   constructor(private svc: GuestService) {}
 
@@ -46,6 +50,10 @@ export class GuestList implements OnInit {
     return this.guests.filter(g => g.side === 'groom');
   }
 
+  getGuestsByRole(guests: Guest[], role: string) {
+    return guests.filter(g => (g.role || 'guest') === role);
+  }
+
   get guestsByTable() {
     const map: { [table: number]: Guest[] } = {};
     for (const g of this.guests) {
@@ -59,18 +67,20 @@ export class GuestList implements OnInit {
 
   addBrideGuest() {
     if (!this.newBrideName.trim()) return;
-    this.svc.add({ name: this.newBrideName, status: 'pending', side: 'bride' })
+    this.svc.add({ name: this.newBrideName, status: 'pending', side: 'bride', role: this.newBrideRole || 'guest' })
       .subscribe(_ => { 
         this.newBrideName = ''; 
+        this.newBrideRole = 'guest';
         this.load(); 
       });
   }
 
   addGroomGuest() {
     if (!this.newGroomName.trim()) return;
-    this.svc.add({ name: this.newGroomName, status: 'pending', side: 'groom' })
+    this.svc.add({ name: this.newGroomName, status: 'pending', side: 'groom', role: this.newGroomRole || 'guest' })
       .subscribe(_ => { 
         this.newGroomName = ''; 
+        this.newGroomRole = 'guest';
         this.load(); 
       });
   }
@@ -144,5 +154,22 @@ export class GuestList implements OnInit {
       textAlign: 'center',
       width: '36px',
     };
+  }
+
+  get sortedGuests() {
+    const guestsCopy = [...this.guests];
+    switch (this.sortOption) {
+      case 'alphabetical':
+        return guestsCopy.sort((a, b) => a.name.localeCompare(b.name));
+      case 'side':
+        return guestsCopy.sort((a, b) => a.side.localeCompare(b.side) || a.name.localeCompare(b.name));
+      case 'role':
+        return guestsCopy.sort((a, b) => (a.role || 'guest').localeCompare(b.role || 'guest') || a.name.localeCompare(b.name));
+      case 'rsvps':
+        const statusOrder = { 'accepted': 0, 'pending': 1, 'declined': 2 };
+        return guestsCopy.sort((a, b) => (statusOrder[a.status] - statusOrder[b.status]) || a.name.localeCompare(b.name));
+      default:
+        return guestsCopy;
+    }
   }
 }
