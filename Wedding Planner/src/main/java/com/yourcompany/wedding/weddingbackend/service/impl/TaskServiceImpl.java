@@ -11,6 +11,7 @@ import com.yourcompany.wedding.weddingbackend.model.Task;
 import com.yourcompany.wedding.weddingbackend.repository.SubtaskRepository;
 import com.yourcompany.wedding.weddingbackend.repository.TaskRepository;
 import com.yourcompany.wedding.weddingbackend.service.TaskService;
+import com.yourcompany.wedding.weddingbackend.service.VendorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepo;
     private final SubtaskRepository subtaskRepo;
+    private final VendorService vendorService;
 
     @Override
     public List<TaskDTO> getAllTasks() {
@@ -69,7 +71,10 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
-    public void deleteTask(Long id) {
+    public void deleteTask(Long id)
+    {
+        vendorService.unassignTaskFromAllVendors(id);
+
         taskRepo.deleteById(id);
     }
 
@@ -122,6 +127,10 @@ public class TaskServiceImpl implements TaskService {
             subtask.setCompleted(completed);
             subtaskRepo.save(subtask);
         });
+
+        if (completed) {
+            vendorService.unassignTaskFromAllVendors(taskId);
+        }
     }
 
     @Override
