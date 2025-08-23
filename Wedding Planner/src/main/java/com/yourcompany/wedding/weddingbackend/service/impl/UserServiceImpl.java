@@ -8,15 +8,21 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+// import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    // private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository
+    // , PasswordEncoder passwordEncoder
+    ) 
+    {
         this.userRepository = userRepository;
+        // this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -40,7 +46,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public User createUser(String name, String email, String password) {
+        User user = User.builder()
+                .name(name)
+                .email(email) // Using email as username
+                // .password(passwordEncoder.encode(password))
+                .password(password)
+                .role(User.Role.USER)
+                .build();
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User login(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found or invalid credentials"));
+
+        // if (!passwordEncoder.matches(password, user.getPassword())) {
+        //     throw new RuntimeException("Invalid credentials");
+        // }
+        return user;
     }
 }

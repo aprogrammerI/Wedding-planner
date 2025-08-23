@@ -2,7 +2,8 @@ package com.yourcompany.wedding.weddingbackend.model;
 
 public enum Role {
     ADMIN,
-    PLANNER,
-    GUEST,
-    VENDOR
+    BRIDE,
+    GROOM,
+    EVENT_PLANNER,
+    OTHER
 }

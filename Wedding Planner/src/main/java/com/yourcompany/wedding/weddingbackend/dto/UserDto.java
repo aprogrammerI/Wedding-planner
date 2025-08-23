@@ -8,6 +8,6 @@ import lombok.*;
 @Builder
 public class UserDto {
     private Long id;
-    private String username;
+    private String email; // Renamed from username
     private String role; // ADMIN, PLANNER, GUEST, VENDOR
 }

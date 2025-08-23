@@ -1,7 +1,6 @@
 package com.yourcompany.wedding.weddingbackend.model;
 
 
-
 import lombok.*;
 import jakarta.persistence.*;
 
@@ -16,8 +15,10 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String name;
+
     @Column(nullable = false, unique = true)
-    private String username;
+    private String email; // Renamed from username
 
     @Column(nullable = false)
     private String password;
@@ -25,6 +26,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    public enum Role {
+        USER,
+        ADMIN
+    }
 
     public Long getId() {
         return id;
@@ -34,12 +40,20 @@ public class User {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() { // Renamed from getUsername
+        return email;
+    }
+
+    public void setEmail(String email) { // Renamed from setUsername
+        this.email = email;
     }
 
     public String getPassword() {

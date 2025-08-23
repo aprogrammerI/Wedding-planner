@@ -1,15 +1,19 @@
 package com.yourcompany.wedding.weddingbackend.dto;
 
-import lombok.*;
+import com.yourcompany.wedding.weddingbackend.model.Assignee;
+import com.yourcompany.wedding.weddingbackend.model.Priority;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class TaskDto {
-    private Long id;
-    private String description;
-    private boolean completed;
-    private Long weddingId;
-    private Long assignedToId;
-}
+import java.time.LocalDate;
+import java.util.List;
+
+public record TaskDTO(
+        Long id,
+        String title,
+        String description,
+        LocalDate dueDate,
+        Priority priority,
+        Assignee assignee,
+        boolean completed,
+        boolean reminderEnabled,
+        List<SubtaskDTO> subtasks
+) {}
