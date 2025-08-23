@@ -17,10 +17,20 @@ public class Guest {
     @Column(nullable = false)
     private String name;
 
-    private boolean rsvp;
-    private String dietaryPreferences;
+    @Enumerated(EnumType.STRING) // Store enum as string in DB
+    private RsvpStatus rsvpStatus = RsvpStatus.PENDING; // New field for RSVP status, default to PENDING
 
-    @ManyToOne
-    @JoinColumn(name = "wedding_id")
-    private Wedding wedding;
+    @Enumerated(EnumType.STRING) // Store enum as string in DB
+    private GuestSide side; // New field for Guest side (Bride/Groom)
+
+    @Enumerated(EnumType.STRING) // Store enum as string in DB
+    private GuestRole role; // New field for Guest role
+
+    private Integer tableNumber; // New field for table number
+
+    private String mealPlan; // New field for meal plan
+
+    private String comments; // New field for comments
+
+    // wedding field removed as per your instruction
 }
