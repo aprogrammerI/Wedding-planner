@@ -12,9 +12,9 @@ import java.util.List;
 
 @Repository
 public interface GuestRepository extends JpaRepository<Guest, Long> {
-    // New methods for filtering and sorting
     List<Guest> findAll(Sort sort);
-//    List<Guest> findBySide(GuestSide side, Sort sort);
-//    List<Guest> findByRole(GuestRole role, Sort sort);
-//    List<Guest> findByRsvpStatus(RsvpStatus rsvpStatus, Sort sort);
+    List<Guest> findBySide(GuestSide side, Sort sort);
+    List<Guest> findByRole(GuestRole role, Sort sort);
+    List<Guest> findByRsvpStatus(RsvpStatus rsvpStatus, Sort sort);
+    // Removed findByWeddingId as it's no longer needed for a global scope
 }

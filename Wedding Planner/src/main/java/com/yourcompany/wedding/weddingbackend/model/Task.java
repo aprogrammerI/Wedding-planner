@@ -26,23 +26,31 @@ public class Task {
     @Column(columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
-    private LocalDate dueDate;
+    @Builder.Default
+    private LocalDate dueDate = null;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private Priority priority = Priority.MEDIUM;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private Assignee assignee = Assignee.OTHER;
 
+    @Builder.Default
     private boolean completed = false;
 
+    @Builder.Default
     private boolean reminderEnabled = false;
 
     // Subtasks: cascade so saves/deletes propagate; orphanRemoval to auto-delete removed subtasks
+    @Builder.Default
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<Subtask> subtasks = new ArrayList<>();
+
+    // Removed @ManyToOne Wedding wedding; field as it's no longer needed for a global scope
 }

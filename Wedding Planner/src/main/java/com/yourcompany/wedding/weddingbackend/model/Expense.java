@@ -18,7 +18,8 @@ public class Expense {
     private String category;
     private BigDecimal amount;
 
-    @ManyToOne
-    @JoinColumn(name = "wedding_id")
-    private Wedding wedding;
+//    @ManyToOne
+//    @JoinColumn(name = "wedding_id")
+//    //private Wedding wedding;
+
 }

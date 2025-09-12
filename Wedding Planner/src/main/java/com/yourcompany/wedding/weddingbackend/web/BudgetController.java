@@ -3,52 +3,72 @@ package com.yourcompany.wedding.weddingbackend.web;
 import com.yourcompany.wedding.weddingbackend.dto.BudgetCategoryDTO;
 import com.yourcompany.wedding.weddingbackend.dto.BudgetDTO;
 import com.yourcompany.wedding.weddingbackend.dto.BudgetItemDTO;
-import com.yourcompany.wedding.weddingbackend.model.Budget;
-import com.yourcompany.wedding.weddingbackend.model.BudgetItem;
 import com.yourcompany.wedding.weddingbackend.model.CategoryType;
 import com.yourcompany.wedding.weddingbackend.service.BudgetService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/budgets")
+@RequestMapping("/api/budget") // Changed to global mapping
 @RequiredArgsConstructor
 public class BudgetController {
 
     private final BudgetService budgetService;
 
-    @GetMapping("/{budgetId}")
-    public BudgetDTO getBudget(@PathVariable Long budgetId) {
-        return budgetService.getBudget(budgetId);
+    @GetMapping
+    public ResponseEntity<BudgetDTO> getBudget() {
+        return ResponseEntity.ok(budgetService.getBudget());
     }
 
-    @PostMapping
-    public BudgetDTO createBudget(@RequestBody Budget budget) {
-        return budgetService.createBudget(budget);
+    @PutMapping
+    public ResponseEntity<BudgetDTO> createOrUpdateBudget(@RequestBody BudgetDTO budgetDto) {
+        try {
+            BudgetDTO savedBudget = budgetService.createOrUpdateBudget(budgetDto);
+            return ResponseEntity.ok(savedBudget);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
-    @PutMapping("/{budgetId}")
-    public BudgetDTO updateBudget(@PathVariable Long budgetId, @RequestBody Budget updatedBudget) {
-        return budgetService.updateBudget(budgetId, updatedBudget);
+    @PostMapping("/items")
+    public ResponseEntity<BudgetItemDTO> addBudgetItem(@RequestBody BudgetItemDTO budgetItemDto) {
+        try {
+            BudgetItemDTO newItem = budgetService.addBudgetItem(budgetItemDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newItem);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
-    @PostMapping("/{budgetId}/items")
-    public BudgetItemDTO addBudgetItem(@PathVariable Long budgetId, @RequestBody BudgetItem budgetItem) {
-        return budgetService.addBudgetItem(budgetId, budgetItem);
+    @PutMapping("/items/{itemId}")
+    public ResponseEntity<BudgetItemDTO> updateBudgetItem(@PathVariable Long itemId, @RequestBody BudgetItemDTO updatedItemDto) {
+        try {
+            BudgetItemDTO updatedItem = budgetService.updateBudgetItem(itemId, updatedItemDto);
+            return ResponseEntity.ok(updatedItem);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
-    @PutMapping("/{budgetId}/items/{itemId}")
-    public BudgetItemDTO updateBudgetItem(@PathVariable Long budgetId, @PathVariable Long itemId, @RequestBody BudgetItem updatedItem) {
-        return budgetService.updateBudgetItem(budgetId, itemId, updatedItem);
+    @DeleteMapping("/items/{itemId}")
+    public ResponseEntity<Void> deleteBudgetItem(@PathVariable Long itemId) {
+        try {
+            budgetService.deleteBudgetItem(itemId);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
-    @DeleteMapping("/{budgetId}/items/{itemId}")
-    public void deleteBudgetItem(@PathVariable Long budgetId, @PathVariable Long itemId) {
-        budgetService.deleteBudgetItem(budgetId, itemId);
-    }
-
-    @PatchMapping("/{budgetId}/categories/{categoryType}/limit")
-    public BudgetCategoryDTO updateBudgetCategoryLimit(@PathVariable Long budgetId, @PathVariable CategoryType categoryType, @RequestParam double newLimit) {
-        return budgetService.updateBudgetCategoryLimit(budgetId, categoryType, newLimit);
+    @PatchMapping("/categories/{categoryType}/limit")
+    public ResponseEntity<BudgetCategoryDTO> updateBudgetCategoryLimit(@PathVariable CategoryType categoryType, @RequestParam double newLimit) {
+        try {
+            BudgetCategoryDTO updatedCategory = budgetService.updateBudgetCategoryLimit(categoryType, newLimit);
+            return ResponseEntity.ok(updatedCategory);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 }

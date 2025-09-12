@@ -5,7 +5,7 @@ import com.yourcompany.wedding.weddingbackend.model.GuestRole;
 import com.yourcompany.wedding.weddingbackend.model.GuestSide;
 import com.yourcompany.wedding.weddingbackend.model.RsvpStatus;
 import lombok.*;
-import org.openapitools.jackson.nullable.JsonNullable; // NEW IMPORT
+import org.openapitools.jackson.nullable.JsonNullable;
 
 @Data
 @NoArgsConstructor
@@ -13,11 +13,18 @@ import org.openapitools.jackson.nullable.JsonNullable; // NEW IMPORT
 @Builder
 public class GuestDto {
     private Long id;
-    private String name; // Name is assumed always present if intended to update or create
-    private JsonNullable<RsvpStatus> rsvpStatus = JsonNullable.undefined(); // Default to undefined
-    private JsonNullable<GuestSide> side = JsonNullable.undefined();       // Default to undefined
-    private JsonNullable<GuestRole> role = JsonNullable.undefined();       // Default to undefined
-    private JsonNullable<Integer> tableNumber = JsonNullable.undefined();   // Default to undefined
-    private JsonNullable<String> mealPlan = JsonNullable.undefined();     // Default to undefined
-    private JsonNullable<String> comments = JsonNullable.undefined();     // Default to undefined
+    private String name;
+    @Builder.Default
+    private JsonNullable<RsvpStatus> rsvpStatus = JsonNullable.undefined();
+    @Builder.Default
+    private JsonNullable<GuestSide> side = JsonNullable.undefined();
+    @Builder.Default
+    private JsonNullable<GuestRole> role = JsonNullable.undefined();
+    @Builder.Default
+    private JsonNullable<Integer> tableNumber = JsonNullable.undefined();
+    @Builder.Default
+    private JsonNullable<String> mealPlan = JsonNullable.undefined();
+    @Builder.Default
+    private JsonNullable<String> comments = JsonNullable.undefined();
+    // Removed weddingId field as it's no longer needed for a global scope
 }

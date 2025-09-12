@@ -1,10 +1,18 @@
 package com.yourcompany.wedding.weddingbackend.dto;
 
 import com.yourcompany.wedding.weddingbackend.model.CategoryType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record BudgetItemDTO(
-        Long id,
-        String itemName,
-        double amount,
-        CategoryType categoryType
-) {}
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class BudgetItemDTO {
+    private Long id;
+    private String itemName;
+    private Double amount;
+    private CategoryType categoryType;
+}

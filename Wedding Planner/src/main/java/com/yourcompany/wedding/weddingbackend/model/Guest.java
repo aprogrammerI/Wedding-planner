@@ -17,20 +17,25 @@ public class Guest {
     @Column(nullable = false)
     private String name;
 
+    @Builder.Default // Added @Builder.Default
     @Enumerated(EnumType.STRING) // Store enum as string in DB
-    private RsvpStatus rsvpStatus = RsvpStatus.PENDING; // New field for RSVP status, default to PENDING
+    private RsvpStatus rsvpStatus = RsvpStatus.PENDING; 
 
+    @Builder.Default // Added @Builder.Default
     @Enumerated(EnumType.STRING) // Store enum as string in DB
-    private GuestSide side; // New field for Guest side (Bride/Groom)
+    private GuestSide side = null; // Assuming null is default for side if not specified
 
+    @Builder.Default // Added @Builder.Default
     @Enumerated(EnumType.STRING) // Store enum as string in DB
-    private GuestRole role; // New field for Guest role
+    private GuestRole role = null; // Assuming null is default for role if not specified
 
-    private Integer tableNumber; // New field for table number
+    @Builder.Default // Added @Builder.Default
+    private Integer tableNumber = null; 
 
-    private String mealPlan; // New field for meal plan
+    @Builder.Default // Added @Builder.Default
+    private String mealPlan = null;     
 
-    private String comments; // New field for comments
-
-    // wedding field removed as per your instruction
+    @Builder.Default // Added @Builder.Default
+    @Column(columnDefinition = "TEXT")
+    private String comments = null;     
 }

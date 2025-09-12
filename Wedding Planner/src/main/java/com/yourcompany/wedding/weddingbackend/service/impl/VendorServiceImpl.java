@@ -120,15 +120,10 @@ public class VendorServiceImpl implements VendorService {
     @Transactional
     public void unassignTaskFromAllVendors(Long taskId) {
         List<Vendor> vendors = vendorRepo.findAll();
-        boolean changed = false;
         for (Vendor v : vendors) {
-            boolean removed = v.getAssignedTasks().removeIf(t -> t.getId().equals(taskId));
-            if (removed) {
-                vendorRepo.save(v);
-                changed = true;
-            }
+            v.getAssignedTasks().removeIf(t -> t.getId().equals(taskId)); // Directly remove
+            vendorRepo.save(v);
         }
-        // (changed flag is informational; no special action needed)
     }
 
     /* ----------------- Mappers ----------------- */

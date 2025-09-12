@@ -2,19 +2,17 @@ package com.yourcompany.wedding.weddingbackend.service;
 
 import com.yourcompany.wedding.weddingbackend.dto.BudgetDTO;
 import com.yourcompany.wedding.weddingbackend.dto.BudgetItemDTO;
-import com.yourcompany.wedding.weddingbackend.model.Budget;
+import com.yourcompany.wedding.weddingbackend.dto.BudgetCategoryDTO;
 import com.yourcompany.wedding.weddingbackend.model.BudgetItem;
 import com.yourcompany.wedding.weddingbackend.model.CategoryType;
-import com.yourcompany.wedding.weddingbackend.dto.BudgetCategoryDTO;
 
 public interface BudgetService {
-    BudgetDTO getBudget(Long budgetId);
-    BudgetDTO createBudget(Budget budget);
-    BudgetDTO updateBudget(Long budgetId, Budget updatedBudget);
+    BudgetDTO getBudget();
+    BudgetDTO createOrUpdateBudget(BudgetDTO budgetDto);
 
-    BudgetItemDTO addBudgetItem(Long budgetId, BudgetItem budgetItem);
-    BudgetItemDTO updateBudgetItem(Long budgetId, Long itemId, BudgetItem updatedItem);
-    void deleteBudgetItem(Long budgetId, Long itemId);
+    BudgetItemDTO addBudgetItem(BudgetItemDTO budgetItemDto);
+    BudgetItemDTO updateBudgetItem(Long itemId, BudgetItemDTO updatedItemDto);
+    void deleteBudgetItem(Long itemId);
 
-    BudgetCategoryDTO updateBudgetCategoryLimit(Long budgetId, CategoryType categoryType, double newLimit);
+    BudgetCategoryDTO updateBudgetCategoryLimit(CategoryType categoryType, double newLimit);
 }

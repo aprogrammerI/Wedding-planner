@@ -1,12 +1,21 @@
 package com.yourcompany.wedding.weddingbackend.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
-public record BudgetDTO(
-        Long id,
-        double totalBudget,
-        double remaining,
-        double totalSpentOverall,
-        List<BudgetItemDTO> budgetItems,
-        List<BudgetCategoryDTO> budgetCategories
-) {}
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class BudgetDTO {
+    private Long id;
+    private Double totalBudget;
+    private Double remaining;
+    private Double totalSpent;
+    private List<BudgetItemDTO> itemDTOs;
+    private List<BudgetCategoryDTO> allCategoryDTOs;
+}

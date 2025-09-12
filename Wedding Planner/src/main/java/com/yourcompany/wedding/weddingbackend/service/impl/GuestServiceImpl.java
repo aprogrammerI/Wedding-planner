@@ -10,6 +10,7 @@ import com.yourcompany.wedding.weddingbackend.service.GuestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class GuestServiceImpl implements GuestService {
 
     private final GuestRepository guestRepository;
@@ -27,40 +29,44 @@ public class GuestServiceImpl implements GuestService {
     }
 
     @Override
+    public List<Guest> findAll() {
+        return guestRepository.findAll();
+    }
+
+    @Override
     public Optional<Guest> findById(Long id) {
         return guestRepository.findById(id);
     }
 
     @Override
+    @Transactional
     public Guest save(Guest guest) {
         return guestRepository.save(guest);
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
         guestRepository.deleteById(id);
     }
 
     @Override
     public List<Guest> findAllGuests(String groupBy, String sortBy, String sortOrder) {
-        List<Guest> guests = guestRepository.findAll(); // Fetch all guests first
+        List<Guest> guests = guestRepository.findAll();
 
-        // Custom Comparator for complex sorting
-        Comparator<Guest> comparator = (g1, g2) -> 0; // Default to no-op
+        Comparator<Guest> comparator = (g1, g2) -> 0;
 
-        // Apply primary grouping/sorting based on 'groupBy'
         if ("side".equalsIgnoreCase(groupBy)) {
             comparator = comparator.thenComparing(Guest::getSide, Comparator.nullsLast(
                     (s1, s2) -> {
                         if (s1 == GuestSide.BRIDE && s2 == GuestSide.GROOM) return -1;
                         if (s1 == GuestSide.GROOM && s2 == GuestSide.BRIDE) return 1;
-                        return 0; // Maintain natural order for nulls or same side
+                        return 0;
                     }
             ));
         } else if ("role".equalsIgnoreCase(groupBy)) {
             comparator = comparator.thenComparing(Guest::getRole, Comparator.nullsLast(
                     (r1, r2) -> {
-                        // Define the specific order for roles
                         List<GuestRole> roleOrder = List.of(
                                 GuestRole.BRIDESMAID,
                                 GuestRole.BEST_MAN,
@@ -77,7 +83,6 @@ public class GuestServiceImpl implements GuestService {
         } else if ("rsvpStatus".equalsIgnoreCase(groupBy)) {
             comparator = comparator.thenComparing(Guest::getRsvpStatus, Comparator.nullsLast(
                     (r1, r2) -> {
-                        // Define the specific order for RSVP status
                         List<RsvpStatus> rsvpOrder = List.of(
                                 RsvpStatus.ACCEPTED,
                                 RsvpStatus.PENDING,
@@ -90,7 +95,6 @@ public class GuestServiceImpl implements GuestService {
             ));
         }
 
-        // Apply secondary sorting if 'sortBy' is provided
         if (sortBy != null && !sortBy.isEmpty()) {
             Comparator<Guest> secondarySort;
             switch (sortBy.toLowerCase()) {
@@ -100,9 +104,8 @@ public class GuestServiceImpl implements GuestService {
                 case "tablenumber":
                     secondarySort = Comparator.comparing(Guest::getTableNumber, Comparator.nullsLast(Integer::compareTo));
                     break;
-                // Add more fields if needed for secondary sorting
                 default:
-                    secondarySort = (g1, g2) -> 0; // No secondary sort or default to no-op
+                    secondarySort = (g1, g2) -> 0;
             }
 
             if ("DESC".equalsIgnoreCase(sortOrder)) {
@@ -115,79 +118,28 @@ public class GuestServiceImpl implements GuestService {
                 .sorted(comparator)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Guest> findAllSorted(String sortBy, String sortOrder) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
+        return guestRepository.findAll(sort);
+    }
+
+    @Override
+    public List<Guest> findBySideSorted(GuestSide side, String sortBy, String sortOrder) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
+        return guestRepository.findBySide(side, sort);
+    }
+
+    @Override
+    public List<Guest> findByRoleSorted(GuestRole role, String sortBy, String sortOrder) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
+        return guestRepository.findByRole(role, sort);
+    }
+
+    @Override
+    public List<Guest> findByRsvpStatusSorted(RsvpStatus rsvpStatus, String sortBy, String sortOrder) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
+        return guestRepository.findByRsvpStatus(rsvpStatus, sort);
+    }
 }
-
-
-
-
-
-
-//package com.yourcompany.wedding.weddingbackend.service.impl;
-//
-//import com.yourcompany.wedding.weddingbackend.model.Guest;
-//import com.yourcompany.wedding.weddingbackend.model.GuestRole;
-//import com.yourcompany.wedding.weddingbackend.model.GuestSide;
-//import com.yourcompany.wedding.weddingbackend.model.RsvpStatus;
-//import com.yourcompany.wedding.weddingbackend.repository.GuestRepository;
-//import com.yourcompany.wedding.weddingbackend.service.GuestService;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.data.domain.Sort;
-//import org.springframework.stereotype.Service;
-//
-//import java.util.List;
-//import java.util.Optional;
-//
-//@Service
-//public class GuestServiceImpl implements GuestService {
-//
-//    private final GuestRepository guestRepository;
-//
-//    @Autowired
-//    public GuestServiceImpl(GuestRepository guestRepository) {
-//        this.guestRepository = guestRepository;
-//    }
-//
-//    @Override
-//    public List<Guest> findAll() {
-//        return guestRepository.findAll();
-//    }
-//
-//    @Override
-//    public Optional<Guest> findById(Long id) {
-//        return guestRepository.findById(id);
-//    }
-//
-//    @Override
-//    public Guest save(Guest guest) {
-//        return guestRepository.save(guest);
-//    }
-//
-//    @Override
-//    public void deleteById(Long id) {
-//        guestRepository.deleteById(id);
-//    }
-//
-//    @Override
-//    public List<Guest> findAllSorted(String sortBy, String sortOrder) {
-//        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
-//        return guestRepository.findAll(sort);
-//    }
-//
-//    @Override
-//    public List<Guest> findBySideSorted(GuestSide side, String sortBy, String sortOrder) {
-//        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
-//        return guestRepository.findBySide(side, sort);
-//    }
-//
-//    @Override
-//    public List<Guest> findByRoleSorted(GuestRole role, String sortBy, String sortOrder) {
-//        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
-//        return guestRepository.findByRole(role, sort);
-//    }
-//
-//    @Override
-//    public List<Guest> findByRsvpStatusSorted(RsvpStatus rsvpStatus, String sortBy, String sortOrder) {
-//        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
-//        return guestRepository.findByRsvpStatus(rsvpStatus, sort);
-//    }
-//}

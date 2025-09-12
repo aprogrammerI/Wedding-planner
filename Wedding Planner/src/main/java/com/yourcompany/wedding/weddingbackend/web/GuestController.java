@@ -3,11 +3,9 @@ package com.yourcompany.wedding.weddingbackend.web;
 
 import com.yourcompany.wedding.weddingbackend.dto.GuestDto;
 import com.yourcompany.wedding.weddingbackend.model.Guest;
-import com.yourcompany.wedding.weddingbackend.model.GuestRole;
-import com.yourcompany.wedding.weddingbackend.model.GuestSide;
 import com.yourcompany.wedding.weddingbackend.model.RsvpStatus;
 import com.yourcompany.wedding.weddingbackend.service.GuestService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,14 +16,10 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/guests")
+@RequiredArgsConstructor
 public class GuestController {
+
     private final GuestService guestService;
-
-    @Autowired
-    public GuestController(GuestService guestService) {
-        this.guestService = guestService;
-    }
-
 
     private GuestDto convertToDto(Guest guest) {
         return GuestDto.builder()
