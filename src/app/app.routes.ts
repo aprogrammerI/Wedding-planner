@@ -8,7 +8,6 @@ import { TaskManager } from './pages/task-manager/task-manager';
 import { Vendors } from './pages/vendors/vendors';
 import { BudgetTracker } from './pages/budget-tracker/budget-tracker';
 import { WeddingDetails } from './pages/wedding-details/wedding-details';
-import { Collaboration } from './pages/collaboration/collaboration';
 import { AuthGuard } from './shared/auth.guard';
 import { RoleGuard } from './shared/role.guard';
 
@@ -45,11 +44,6 @@ export const routes: Routes = [
   { 
     path: 'wedding-details', 
     component: WeddingDetails,
-    canActivate: [RoleGuard]
-  },
-  { 
-    path: 'collaboration', 
-    component: Collaboration,
     canActivate: [RoleGuard]
   },
   { path: '**', redirectTo: 'home' }

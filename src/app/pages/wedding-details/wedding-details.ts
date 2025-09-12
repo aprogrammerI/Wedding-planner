@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../services/auth.service';
 import { GuestService, Guest } from '../../services/guest.service';
 import { TaskService, Task } from '../../services/task.service';
@@ -46,12 +47,15 @@ interface EventItinerary {
   event: string;
   description: string;
   isEditing?: boolean;
+  hour?: number;
+  minute?: number;
+  amPm?: string;
 }
 
 @Component({
   selector: 'app-wedding-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, MatIconModule],
   templateUrl: './wedding-details.html',
   styleUrls: ['./wedding-details.scss']
 })
@@ -105,13 +109,11 @@ export class WeddingDetails implements OnInit {
     { time: '11:00 PM', event: 'Grand Exit', description: 'Sparkler send-off', isEditing: false }
   ];
 
-  selectedPhotos: File[] = [];
-  photoPreviewUrls: string[] = [];
   showCouplePhoto = false;
   showDatePicker = false;
   showLocationInput = false;
   
-  newItineraryItem: EventItinerary = { time: '', event: '', description: '' };
+  newItineraryItem: EventItinerary = { time: '', event: '', description: '', hour: 12, minute: 0, amPm: 'PM' };
 
   constructor(
     private authService: AuthService,
@@ -121,6 +123,7 @@ export class WeddingDetails implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadWeddingDetails();
     this.loadRealData();
   }
 
@@ -164,6 +167,37 @@ export class WeddingDetails implements OnInit {
     };
   }
 
+  private loadWeddingDetails() {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    const userId = currentUser.id;
+    
+    // Load couple details from localStorage with user-specific key
+    const savedCoupleDetails = localStorage.getItem(`weddingCoupleDetails_${userId}`);
+    if (savedCoupleDetails) {
+      this.coupleDetails = JSON.parse(savedCoupleDetails);
+      // Show the couple photo if details are already saved
+      if (this.coupleDetails.brideFirstName && this.coupleDetails.groomFirstName) {
+        this.showCouplePhoto = true;
+      }
+    }
+
+    // Load event information from localStorage with user-specific key
+    const savedEventInfo = localStorage.getItem(`weddingEventInfo_${userId}`);
+    if (savedEventInfo) {
+      this.eventInformation = JSON.parse(savedEventInfo);
+    }
+
+    // Load event itinerary from localStorage with user-specific key
+    const savedItinerary = localStorage.getItem(`weddingItinerary_${userId}`);
+    if (savedItinerary) {
+      this.eventItinerary = JSON.parse(savedItinerary);
+      // Sort existing itinerary by time
+      this.sortItineraryByTime();
+    }
+  }
+
   private loadRealData() {
     // Load guest data
     this.guestService.list().subscribe({
@@ -199,31 +233,14 @@ export class WeddingDetails implements OnInit {
     });
   }
 
-  onPhotoSelect(event: any) {
-    const files = event.target.files;
-    if (files) {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        this.selectedPhotos.push(file);
-        
-        // Create preview URL
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          this.photoPreviewUrls.push(e.target.result);
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-  }
-
-  removePhoto(index: number) {
-    this.selectedPhotos.splice(index, 1);
-    this.photoPreviewUrls.splice(index, 1);
-  }
 
   saveCoupleDetails() {
-    // Save couple details logic here
-    console.log('Couple details saved:', this.coupleDetails);
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    // Save couple details to localStorage with user-specific key
+    localStorage.setItem(`weddingCoupleDetails_${currentUser.id}`, JSON.stringify(this.coupleDetails));
+    console.log('Couple details saved for user:', currentUser.id, this.coupleDetails);
     
     // Show the couple photo with names
     this.showCouplePhoto = true;
@@ -235,21 +252,54 @@ export class WeddingDetails implements OnInit {
   }
 
   saveEventInformation() {
-    // Save event information logic here
-    console.log('Event information saved:', this.eventInformation);
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    // Save event information to localStorage with user-specific key
+    localStorage.setItem(`weddingEventInfo_${currentUser.id}`, JSON.stringify(this.eventInformation));
+    console.log('Event information saved for user:', currentUser.id, this.eventInformation);
   }
 
   editEventDate() {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
     this.eventInformation.date = '';
+    // Save the cleared date with user-specific key
+    localStorage.setItem(`weddingEventInfo_${currentUser.id}`, JSON.stringify(this.eventInformation));
+    console.log('Date cleared for user:', currentUser.id);
+  }
+
+  onDateChange() {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    // Auto-save when date is changed
+    if (this.eventInformation.date) {
+      localStorage.setItem(`weddingEventInfo_${currentUser.id}`, JSON.stringify(this.eventInformation));
+      console.log('Date saved for user:', currentUser.id, this.eventInformation.date);
+    }
   }
 
   saveLocation() {
-    // Location is automatically saved when Enter is pressed due to ngModel binding
-    // This method can be used for any additional logic if needed
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    // Save event information to localStorage when location is updated
+    if (this.eventInformation.location && this.eventInformation.location.trim()) {
+      localStorage.setItem(`weddingEventInfo_${currentUser.id}`, JSON.stringify(this.eventInformation));
+      console.log('Location saved for user:', currentUser.id, this.eventInformation.location);
+    }
   }
 
   editLocation() {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
     this.eventInformation.location = '';
+    // Save the cleared location with user-specific key
+    localStorage.setItem(`weddingEventInfo_${currentUser.id}`, JSON.stringify(this.eventInformation));
+    console.log('Location cleared for user:', currentUser.id);
   }
 
   toggleDatePicker(event: Event) {
@@ -274,7 +324,13 @@ export class WeddingDetails implements OnInit {
   }
 
   saveItem(index: number) {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
     this.eventItinerary[index].isEditing = false;
+    // Save itinerary to localStorage with user-specific key
+    localStorage.setItem(`weddingItinerary_${currentUser.id}`, JSON.stringify(this.eventItinerary));
+    console.log('Itinerary item saved for user:', currentUser.id);
   }
 
   cancelEditItem(index: number) {
@@ -282,26 +338,163 @@ export class WeddingDetails implements OnInit {
     this.eventItinerary[index].isEditing = false;
   }
 
-  addItineraryItem() {
-    if (this.newItineraryItem.time && this.newItineraryItem.event && this.newItineraryItem.description) {
-      this.eventItinerary.push({ 
-        ...this.newItineraryItem, 
-        isEditing: false 
-      });
-      this.newItineraryItem = { time: '', event: '', description: '' };
-    }
-  }
 
   removeItineraryItem(index: number) {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
     this.eventItinerary.splice(index, 1);
+    // Save itinerary to localStorage with user-specific key
+    localStorage.setItem(`weddingItinerary_${currentUser.id}`, JSON.stringify(this.eventItinerary));
+    console.log('Itinerary item removed for user:', currentUser.id);
   }
 
   updateItineraryItem(index: number, field: keyof EventItinerary, event: any) {
     if (field !== 'isEditing') {
       const value = event.target?.value;
       if (value !== undefined) {
-        this.eventItinerary[index][field] = value;
+        (this.eventItinerary[index] as any)[field] = value;
       }
+    }
+  }
+
+  // Time picker methods
+  getHours() {
+    return [
+      { value: 12, display: '12' },
+      { value: 1, display: '1' },
+      { value: 2, display: '2' },
+      { value: 3, display: '3' },
+      { value: 4, display: '4' },
+      { value: 5, display: '5' },
+      { value: 6, display: '6' },
+      { value: 7, display: '7' },
+      { value: 8, display: '8' },
+      { value: 9, display: '9' },
+      { value: 10, display: '10' },
+      { value: 11, display: '11' }
+    ];
+  }
+
+  getMinutes() {
+    return [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+  }
+
+  getHourFromTime(timeStr: string): number {
+    if (!timeStr) return 12;
+    const [time, amPm] = timeStr.split(' ');
+    const [hour] = time.split(':');
+    return parseInt(hour);
+  }
+
+  getMinuteFromTime(timeStr: string): number {
+    if (!timeStr) return 0;
+    const [time] = timeStr.split(' ');
+    const [, minute] = time.split(':');
+    return parseInt(minute);
+  }
+
+  getAmPmFromTime(timeStr: string): string {
+    if (!timeStr) return 'PM';
+    const parts = timeStr.split(' ');
+    return parts[parts.length - 1] || 'PM';
+  }
+
+  updateTimeHour(index: number, event: any) {
+    const hour = parseInt(event.target.value);
+    this.eventItinerary[index].hour = hour;
+    this.updateTimeString(index);
+  }
+
+  updateTimeMinute(index: number, event: any) {
+    const minute = parseInt(event.target.value);
+    this.eventItinerary[index].minute = minute;
+    this.updateTimeString(index);
+  }
+
+  updateTimeAmPm(index: number, event: any) {
+    const amPm = event.target.value;
+    this.eventItinerary[index].amPm = amPm;
+    this.updateTimeString(index);
+  }
+
+  updateTimeString(index: number) {
+    const item = this.eventItinerary[index];
+    const hour = item.hour || 12;
+    const minute = item.minute || 0;
+    const amPm = item.amPm || 'PM';
+    this.eventItinerary[index].time = `${hour}:${minute.toString().padStart(2, '0')} ${amPm}`;
+    
+    // Sort itinerary after time update
+    this.sortItineraryByTime();
+    
+    // Save to localStorage
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      localStorage.setItem(`weddingItinerary_${currentUser.id}`, JSON.stringify(this.eventItinerary));
+    }
+  }
+
+  sortItineraryByTime() {
+    this.eventItinerary.sort((a, b) => {
+      return this.compareTimes(a.time, b.time);
+    });
+  }
+
+  compareTimes(timeA: string, timeB: string): number {
+    // Parse time strings like "2:30 PM" or "11:45 AM"
+    const parseTime = (timeStr: string) => {
+      const [time, period] = timeStr.split(' ');
+      const [hour, minute] = time.split(':').map(Number);
+      
+      // Convert to 24-hour format for comparison
+      let hour24 = hour;
+      if (period === 'AM' && hour === 12) {
+        hour24 = 0; // 12:XX AM becomes 00:XX
+      } else if (period === 'PM' && hour !== 12) {
+        hour24 = hour + 12; // 1:XX PM becomes 13:XX
+      }
+      
+      return hour24 * 60 + minute; // Convert to minutes since midnight
+    };
+
+    return parseTime(timeA) - parseTime(timeB);
+  }
+
+  addItineraryItem() {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    if (this.newItineraryItem.event && this.newItineraryItem.description) {
+      // Create time string from individual components
+      const hour = this.newItineraryItem.hour || 12;
+      const minute = this.newItineraryItem.minute || 0;
+      const amPm = this.newItineraryItem.amPm || 'PM';
+      const timeString = `${hour}:${minute.toString().padStart(2, '0')} ${amPm}`;
+
+      this.eventItinerary.push({ 
+        time: timeString,
+        event: this.newItineraryItem.event, 
+        description: this.newItineraryItem.description,
+        isEditing: false 
+      });
+      
+      // Sort itinerary by time
+      this.sortItineraryByTime();
+      
+      // Reset form
+      this.newItineraryItem = { 
+        time: '', 
+        event: '', 
+        description: '', 
+        hour: 12, 
+        minute: 0, 
+        amPm: 'PM' 
+      };
+      
+      // Save itinerary to localStorage with user-specific key
+      localStorage.setItem(`weddingItinerary_${currentUser.id}`, JSON.stringify(this.eventItinerary));
+      console.log('New itinerary item added and sorted for user:', currentUser.id);
     }
   }
 }

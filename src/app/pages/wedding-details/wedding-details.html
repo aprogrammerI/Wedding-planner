@@ -74,7 +74,7 @@
           <label for="eventDate">Wedding Date</label>
           <div class="date-input-container">
             <div *ngIf="!eventInformation.date" class="date-input">
-              <input type="date" id="eventDate" class="form-control" [(ngModel)]="eventInformation.date">
+              <input type="date" id="eventDate" class="form-control" [(ngModel)]="eventInformation.date" (change)="onDateChange()" (blur)="onDateChange()">
             </div>
             <div *ngIf="eventInformation.date" class="selected-date">
               {{ eventInformation.date | date:'longDate' }}
@@ -88,7 +88,7 @@
           <label for="eventLocation">Location</label>
           <div class="location-input-container">
             <div *ngIf="!eventInformation.location" class="location-input">
-              <input type="text" id="eventLocation" class="form-control" [(ngModel)]="eventInformation.location" placeholder="City, State" (keyup.enter)="saveLocation()">
+              <input type="text" id="eventLocation" class="form-control" [(ngModel)]="eventInformation.location" placeholder="City, State" (keyup.enter)="saveLocation()" (blur)="saveLocation()">
             </div>
             <div *ngIf="eventInformation.location" class="selected-location">
               {{ eventInformation.location }}
@@ -209,8 +209,25 @@
           <div class="timeline-item" *ngFor="let item of eventItinerary; let i = index">
             <div class="timeline-time">
               <span *ngIf="!item.isEditing">{{ item.time }}</span>
-              <input *ngIf="item.isEditing" type="time" class="form-control form-control-sm" 
-                     [value]="item.time" (input)="updateItineraryItem(i, 'time', $event)">
+              <div *ngIf="item.isEditing" class="time-picker">
+                <select class="form-control form-control-sm" 
+                        [value]="getHourFromTime(item.time)" 
+                        (change)="updateTimeHour(i, $event)">
+                  <option *ngFor="let hour of getHours()" [value]="hour.value">{{ hour.display }}</option>
+                </select>
+                <span class="time-separator">:</span>
+                <select class="form-control form-control-sm" 
+                        [value]="getMinuteFromTime(item.time)" 
+                        (change)="updateTimeMinute(i, $event)">
+                  <option *ngFor="let minute of getMinutes()" [value]="minute">{{ minute.toString().padStart(2, '0') }}</option>
+                </select>
+                <select class="form-control form-control-sm" 
+                        [value]="getAmPmFromTime(item.time)" 
+                        (change)="updateTimeAmPm(i, $event)">
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
             </div>
             <div class="timeline-content">
               <h5 *ngIf="!item.isEditing">{{ item.event }}</h5>
@@ -221,16 +238,19 @@
                      [value]="item.description" (input)="updateItineraryItem(i, 'description', $event)">
             </div>
             <div class="timeline-actions">
-              <button *ngIf="!item.isEditing" class="edit-icon" (click)="startEditItem(i)">
-                <i class="fas fa-edit"></i>
-              </button>
+              <mat-icon *ngIf="!item.isEditing" class="edit-icon" 
+                       (click)="startEditItem(i)" 
+                       title="Edit Item">edit</mat-icon>
+              <mat-icon *ngIf="!item.isEditing" class="delete-icon" 
+                       (click)="removeItineraryItem(i)" 
+                       title="Delete Item">delete</mat-icon>
               <div *ngIf="item.isEditing" class="edit-actions">
-                <button class="btn-success" (click)="saveItem(i)">
-                  <i class="fas fa-check"></i>
-                </button>
-                <button class="delete-icon" (click)="cancelEditItem(i)">
-                  <i class="fas fa-times"></i>
-                </button>
+                <mat-icon class="save-icon" 
+                         (click)="saveItem(i)" 
+                         title="Save Changes">check</mat-icon>
+                <mat-icon class="delete-icon" 
+                         (click)="cancelEditItem(i)" 
+                         title="Cancel Edit">close</mat-icon>
               </div>
             </div>
           </div>
@@ -242,8 +262,25 @@
         <h6>Add New Item</h6>
         <div class="form-row">
           <div class="col-md-3">
-            <input type="time" class="form-control form-control-sm" 
-                   [(ngModel)]="newItineraryItem.time" placeholder="Time">
+            <div class="time-picker">
+              <select class="form-control form-control-sm" 
+                      [(ngModel)]="newItineraryItem.hour" 
+                      name="newHour">
+                <option *ngFor="let hour of getHours()" [value]="hour.value">{{ hour.display }}</option>
+              </select>
+              <span class="time-separator">:</span>
+              <select class="form-control form-control-sm" 
+                      [(ngModel)]="newItineraryItem.minute" 
+                      name="newMinute">
+                <option *ngFor="let minute of getMinutes()" [value]="minute">{{ minute.toString().padStart(2, '0') }}</option>
+              </select>
+              <select class="form-control form-control-sm" 
+                      [(ngModel)]="newItineraryItem.amPm" 
+                      name="newAmPm">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
           </div>
           <div class="col-md-4">
             <input type="text" class="form-control form-control-sm" 
@@ -254,42 +291,11 @@
                    [(ngModel)]="newItineraryItem.description" placeholder="Description">
           </div>
           <div class="col-md-1">
-            <button class="btn btn-sm btn-primary" (click)="addItineraryItem()">
-              <i class="fas fa-plus"></i>
-            </button>
+            <mat-icon class="add-icon" (click)="addItineraryItem()" title="Add New Item">add</mat-icon>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Post Wedding Section -->
-    <div class="section-card">
-      <div class="section-header">
-        <h2><i class="fas fa-camera"></i> Post Wedding</h2>
-      </div>
-      <div class="photo-upload-section">
-        <div class="upload-area">
-          <input type="file" id="photoUpload" multiple accept="image/*" (change)="onPhotoSelect($event)" class="d-none">
-          <label for="photoUpload" class="upload-button">
-            <i class="fas fa-cloud-upload-alt"></i>
-            <span>Upload Photos</span>
-          </label>
-        </div>
-        
-        <div class="photo-gallery" *ngIf="photoPreviewUrls.length > 0">
-          <h5 class="mb-3">Uploaded Photos</h5>
-          <div class="row">
-            <div class="col-md-3 mb-3" *ngFor="let url of photoPreviewUrls; let i = index">
-              <div class="photo-item">
-                <img [src]="url" alt="Wedding photo" class="img-fluid">
-                <button class="remove-photo" (click)="removePhoto(i)">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>

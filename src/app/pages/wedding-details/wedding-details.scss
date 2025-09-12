@@ -379,6 +379,54 @@
   width: 100%;
 }
 
+// Time Picker Styling
+.time-picker {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+  z-index: 10;
+  background: white;
+  padding: 1px;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  max-width: 120px;
+  
+  select {
+    min-width: 32px;
+    max-width: 35px;
+    text-align: center;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.05rem;
+    position: relative;
+    z-index: 15;
+    background: white;
+    border: 1px solid var(--color-muted);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    height: 24px;
+    
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 1px rgba(110, 127, 103, 0.1);
+    }
+    
+    &:hover {
+      border-color: var(--color-primary);
+    }
+  }
+  
+  .time-separator {
+    font-weight: bold;
+    color: var(--color-primary);
+    font-size: 0.7rem;
+    z-index: 5;
+    margin: 0 1px;
+    line-height: 1;
+  }
+}
+
 .add-item-form {
   background: var(--color-bg);
   padding: 1rem;
@@ -397,13 +445,23 @@
     align-items: center;
   }
 
-  .btn {
-    min-width: 36px;
-    height: 36px;
+  .add-icon {
+    cursor: pointer;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    padding: 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem;
+    color: #28a745;
+    
+    &:hover {
+      background-color: rgba(40, 167, 69, 0.1);
+      transform: scale(1.1);
+    }
   }
 }
 
@@ -439,6 +497,15 @@
       font-weight: 700;
       color: var(--color-primary);
       font-size: 0.8rem;
+      position: relative;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      
+      .time-picker {
+        justify-content: flex-end;
+      }
     }
 
     .timeline-content {
@@ -450,6 +517,7 @@
       border-radius: 6px;
       border: 1px solid var(--color-muted);
       transition: all 0.3s ease;
+      z-index: 1;
 
       &:hover {
         transform: translateX(3px);
@@ -499,7 +567,7 @@
         gap: 12px;
       }
 
-      .edit-icon, .delete-icon {
+      .edit-icon, .delete-icon, .save-icon {
         cursor: pointer;
         font-size: 24px;
         width: 24px;
@@ -521,6 +589,15 @@
         transform: scale(1.1);
       }
 
+      .save-icon {
+        color: #28a745;
+      }
+
+      .save-icon:hover {
+        background-color: rgba(40, 167, 69, 0.1);
+        transform: scale(1.1);
+      }
+
       .delete-icon {
         color: #dc3545;
       }
@@ -528,16 +605,6 @@
       .delete-icon:hover {
         background-color: rgba(220, 53, 69, 0.1);
         transform: scale(1.1);
-      }
-
-      .btn-success {
-        color: #28a745;
-        background: none;
-
-        &:hover {
-          background-color: rgba(40, 167, 69, 0.1);
-          transform: scale(1.1);
-        }
       }
     }
   }
@@ -796,6 +863,25 @@
     .budget-item {
       padding: 0.6rem;
       margin-bottom: 0.4rem;
+    }
+  }
+
+  // Mobile time picker adjustments
+  .time-picker {
+    max-width: 100px;
+    gap: 1px;
+    
+    select {
+      min-width: 28px;
+      max-width: 30px;
+      font-size: 0.6rem;
+      padding: 0.1rem 0.02rem;
+      height: 20px;
+    }
+    
+    .time-separator {
+      font-size: 0.65rem;
+      margin: 0;
     }
   }
 }

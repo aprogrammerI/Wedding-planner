@@ -77,4 +77,3 @@ The wedding app now includes a comprehensive role-based system that allows users
 - Role-based feature access control
 - Different permissions per role
 - Role switching capabilities
-- Team collaboration features
