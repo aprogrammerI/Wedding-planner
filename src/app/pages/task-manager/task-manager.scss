@@ -80,11 +80,13 @@
 }
 
 
-/* Deadline text positioning */
-.deadline-text {
-  margin-right: 80px; /* Give space for action icons */
-  white-space: nowrap;
-  min-width: 120px; /* Ensure consistent spacing */
+
+/* Form Label Styling */
+.form-label-sm {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  margin-bottom: 0.25rem;
 }
 
 /* Button Styling with Project Colors */

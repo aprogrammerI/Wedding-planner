@@ -84,8 +84,28 @@ export class TaskManager implements OnInit {
     this.loadReminders();
   }
 
+  // Sync reminder date with due date when due date changes
+  onDueDateChange() {
+    if (this.newReminderEnabled && this.newDueDate && !this.newReminderDate) {
+      this.newReminderDate = this.newDueDate;
+    }
+  }
+
+  // Sync reminder date with due date when reminder is enabled
+  onReminderEnabledChange() {
+    if (this.newReminderEnabled && this.newDueDate && !this.newReminderDate) {
+      this.newReminderDate = this.newDueDate;
+    }
+  }
+
   add() {
     if (!this.newTitle.trim()) return;
+    
+    // If reminder is enabled but no reminder date is set, use the due date
+    const reminderDate = this.newReminderEnabled && !this.newReminderDate && this.newDueDate 
+      ? this.newDueDate 
+      : this.newReminderDate || undefined;
+    
     this.svc.add({ 
         title: this.newTitle, 
         done: false,
@@ -93,7 +113,7 @@ export class TaskManager implements OnInit {
         dueDate: this.newDueDate || undefined,
         priority: this.newPriority,
         assignedTo: this.newAssignedTo || undefined,
-        reminderDate: this.newReminderDate || undefined,
+        reminderDate: reminderDate,
         reminderEnabled: this.newReminderEnabled,
       })
       .subscribe(_ => { 
@@ -128,7 +148,11 @@ export class TaskManager implements OnInit {
 
   startEdit(task: Task) {
     this.editingTaskId = task.id;
-    this.editDraft = { ...task };
+    this.editDraft = { 
+      ...task,
+      reminderDate: task.dueDate || task.reminderDate, // Use due date as reminder date if available
+      reminderEnabled: !!(task.dueDate || task.reminderEnabled) // Enable if there's a due date or reminder
+    };
   }
 
   cancelEdit() {
@@ -143,7 +167,7 @@ export class TaskManager implements OnInit {
       title: (this.editDraft.title || '').trim(),
       done: !!this.editDraft.done,
       description: this.editDraft.description || undefined,
-      dueDate: this.editDraft.dueDate || undefined,
+      dueDate: this.editDraft.reminderDate || undefined, // Use reminder date as due date
       priority: (this.editDraft.priority as Task['priority']) || 'medium',
       assignedTo: this.editDraft.assignedTo || undefined,
       reminderDate: this.editDraft.reminderDate || undefined,
