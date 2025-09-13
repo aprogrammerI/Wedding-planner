@@ -5,6 +5,7 @@ import com.yourcompany.wedding.weddingbackend.repository.UserRepository;
 import com.yourcompany.wedding.weddingbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,15 +15,12 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    // private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository
-    // , PasswordEncoder passwordEncoder
-    ) 
-    {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        // this.passwordEncoder = passwordEncoder;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -50,7 +48,7 @@ public class UserServiceImpl implements UserService {
         User user = User.builder()
                 .name(name)
                 .email(email) // Using email as username
-                // .password(passwordEncoder.encode(password))
+                 .password(passwordEncoder.encode(password))
                 .password(password)
                 .role(User.Role.USER)
                 .build();
@@ -62,9 +60,9 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found or invalid credentials"));
 
-        // if (!passwordEncoder.matches(password, user.getPassword())) {
-        //     throw new RuntimeException("Invalid credentials");
-        // }
+         if (!passwordEncoder.matches(password, user.getPassword())) {
+             throw new RuntimeException("Invalid credentials");
+         }
         return user;
     }
 }

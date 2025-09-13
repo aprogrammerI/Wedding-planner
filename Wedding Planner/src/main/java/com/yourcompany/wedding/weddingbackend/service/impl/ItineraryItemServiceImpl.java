@@ -81,12 +81,11 @@ public class ItineraryItemServiceImpl implements ItineraryItemService {
     public boolean isDoubleBooked(LocalTime time, Long currentItemId) {
         LocalTime truncatedTime = normalizeToMinutes(time);
 
-        List<ItineraryItem> conflictingItems = itineraryItemRepository.findAll().stream()
-                .filter(item -> normalizeToMinutes(item.getTime()).equals(truncatedTime))
-                .filter(item -> currentItemId == null || !item.getId().equals(currentItemId))
-                .toList();
+        List<ItineraryItem> sameTimeItems = itineraryItemRepository.findByTime(truncatedTime);
+        boolean conflict = sameTimeItems.stream()
+                .anyMatch(item -> currentItemId == null || !item.getId().equals(currentItemId));
 
-        return !conflictingItems.isEmpty();
+        return conflict;
     }
 
     private LocalTime normalizeToMinutes(LocalTime time) {

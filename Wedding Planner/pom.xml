@@ -21,49 +21,63 @@
 		<java.version>21</java.version>
 	</properties>
 
-
 	<dependencies>
 		<!-- Core Spring Boot Web -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<!-- SQL Server -->
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>mssql-jdbc</artifactId>
 			<version>13.2.0.jre11</version>
 			<scope>runtime</scope>
 		</dependency>
-		<!-- Lombok (optional) -->
+
+		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
+
+		<!-- Spring Data JPA -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+		<!-- Actuator -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!-- OpenAPI / Jackson nullable -->
+		<dependency>
+			<groupId>org.openapitools</groupId>
+			<artifactId>jackson-databind-nullable</artifactId>
+			<version>0.2.6</version>
+		</dependency>
+
 		<!-- Testing -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<!-- Actuator for monitoring -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.openapitools</groupId>
-			<artifactId>jackson-databind-nullable</artifactId>
-			<version>0.2.6</version> <!-- Use a recent version -->
-		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
+			<!-- Java Compiler -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -74,10 +88,68 @@
 				</configuration>
 			</plugin>
 
+			<!-- Spring Boot -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
+			<!-- Exec plugin used by the 'frontend' profile below -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.1.0</version>
+			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<!-- Optional frontend build: runs only when you pass -Pfrontend -->
+		<profile>
+			<id>frontend</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>3.1.0</version>
+						<executions>
+							<!-- npm ci (faster, deterministic) -->
+							<execution>
+								<id>npm-ci</id>
+								<phase>generate-resources</phase>
+								<goals><goal>exec</goal></goals>
+								<configuration>
+									<executable>npm</executable>
+									<workingDirectory>${project.basedir}/frontend</workingDirectory>
+									<arguments>
+										<argument>ci</argument>
+									</arguments>
+								</configuration>
+							</execution>
+
+
+							<execution>
+								<id>ng-build</id>
+								<phase>generate-resources</phase>
+								<goals><goal>exec</goal></goals>
+								<configuration>
+									<executable>npx</executable>
+									<workingDirectory>${project.basedir}/frontend</workingDirectory>
+									<arguments>
+										<argument>ng</argument>
+										<argument>build</argument>
+										<argument>--configuration</argument>
+										<argument>production</argument>
+										<argument>--output-path</argument>
+										<argument>../src/main/resources/static</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
