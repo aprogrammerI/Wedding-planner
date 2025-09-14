@@ -1,12 +1,35 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, of } from 'rxjs';
-import { delay, tap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
+import { delay, tap, catchError, map } from 'rxjs/operators';
 
 export interface User {
   id: number;
   name: string;
   email: string;
   role?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  id: number;
+  email: string;
+}
+
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface RegisterResponse {
+  id: number;
+  name: string;
+  email: string;
 }
 
 export interface AuthResponse {
@@ -30,8 +53,9 @@ export interface ForgotPasswordResponse {
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+  private readonly API_BASE_URL = 'http://localhost:8080/api';
 
-  // Available roles
+  // Available roles - all map to USER in backend
   public readonly availableRoles: RoleOption[] = [
     {
       role: 'bride',
@@ -52,167 +76,109 @@ export class AuthService {
       description: 'Professional wedding planner'
     },
     {
-      role: 'user',
-      displayName: 'Other',
+      role: 'guest',
+      displayName: 'Guest',
       icon: 'assets/user.png',
-      description: 'Guest or other participant'
+      description: 'Wedding guest or other participant'
     }
   ];
 
-  // Mock users for demonstration
-  private mockUsers = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', password: 'password123', role: 'groom' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', password: 'password123', role: 'bride' }
-  ];
 
-  constructor() {
+  constructor(private http: HttpClient) {
     // Check if user is already logged in
     this.checkAuthStatus();
   }
 
+
   login(creds: { email: string; password: string }): Observable<AuthResponse> {
-    // Special admin login - bypasses role selection
-    if (creds.email === 'admin@admin.com' && creds.password === 'admin') {
-      const adminUser = {
-        id: 999,
-        name: 'Administrator',
-        email: 'admin@admin.com',
-        role: 'admin'
-      };
-      
-      const response: AuthResponse = {
-        token: `admin-token-${adminUser.id}`,
-        user: adminUser
-      };
-      
-      return of(response).pipe(
-        delay(500), // Simulate network delay
-        tap(response => {
-          localStorage.setItem('auth_token', response.token);
-          localStorage.setItem('user_role', response.user.role || '');
-          this.currentUserSubject.next(response.user);
-        })
-      );
-    }
-    
-    // Regular user login
-    const user = this.mockUsers.find(u => u.email === creds.email && u.password === creds.password);
-    
-    if (user) {
-      // Check if there's a temporary role from registration
-      const tempRole = localStorage.getItem('temp_user_role');
-      if (tempRole) {
-        // Apply the temporary role
-        user.role = tempRole;
-        localStorage.removeItem('temp_user_role'); // Clean up
-        localStorage.setItem('user_role', tempRole);
-      }
-      
-      const response: AuthResponse = {
-        token: `mock-token-${user.id}`,
-        user: { id: user.id, name: user.name, email: user.email, role: user.role || '' }
-      };
-      
-      return of(response).pipe(
-        delay(500), // Simulate network delay
-        tap(response => {
-          localStorage.setItem('auth_token', response.token);
-          this.currentUserSubject.next(response.user);
-        })
-      );
-    } else {
-      return new Observable(observer => {
-        setTimeout(() => {
-          observer.error(new Error('Invalid email or password'));
-        }, 500);
-      });
-    }
+    const loginRequest: LoginRequest = {
+      email: creds.email,
+      password: creds.password
+    };
+
+    return this.http.post<LoginResponse>(`${this.API_BASE_URL}/login`, loginRequest).pipe(
+      map((response: LoginResponse) => {
+        // Create a mock token since backend doesn't provide JWT
+        const token = `token-${response.id}-${Date.now()}`;
+        
+        // Check if there's a temporary role from registration
+        const tempRole = localStorage.getItem('temp_user_role');
+        const userRole = tempRole || 'guest'; // Default to guest role (frontend role)
+        
+        if (tempRole) {
+          localStorage.removeItem('temp_user_role'); // Clean up
+        }
+        
+        const user: User = {
+          id: response.id,
+          name: localStorage.getItem('temp_user_name') || '', // Get name from temp storage
+          email: response.email,
+          role: userRole
+        };
+
+        const authResponse: AuthResponse = {
+          token: token,
+          user: user
+        };
+
+        return authResponse;
+      }),
+      tap(response => {
+        localStorage.setItem('auth_token', response.token);
+        localStorage.setItem('user_role', response.user.role || '');
+        localStorage.setItem('user_id', response.user.id.toString());
+        localStorage.setItem('user_email', response.user.email);
+        this.currentUserSubject.next(response.user);
+      }),
+      catchError(error => {
+        console.error('Login error:', error);
+        return throwError(() => new Error('Invalid email or password'));
+      })
+    );
   }
 
-  loginWithGoogle(): Observable<AuthResponse> {
-    // Simulate Google OAuth flow
-    return new Observable(observer => {
-      setTimeout(() => {
-        // Mock Google user data
-        const googleUser = {
-          id: Date.now(),
-          name: 'Google User',
-          email: 'googleuser@gmail.com',
-          role: '' // Role will be set later
-        };
-        
-        const response: AuthResponse = {
-          token: `google-token-${googleUser.id}`,
-          user: googleUser
-        };
-        
-        // Store token and user
-        localStorage.setItem('auth_token', response.token);
-        this.currentUserSubject.next(response.user);
-        
-        observer.next(response);
-        observer.complete();
-      }, 1000); // Simulate OAuth delay
-    });
-  }
 
   forgotPassword(email: string): Observable<ForgotPasswordResponse> {
-    // Check if email exists
-    const userExists = this.mockUsers.some(u => u.email === email);
-    
+    // For now, return a mock response since backend doesn't have forgot password
     return new Observable(observer => {
       setTimeout(() => {
-        if (userExists) {
-          observer.next({
-            success: true,
-            message: 'Password reset instructions have been sent to your email.'
-          });
-        } else {
-          observer.next({
-            success: false,
-            message: 'No account found with this email address.'
-          });
-        }
+        observer.next({
+          success: true,
+          message: 'Password reset instructions have been sent to your email.'
+        });
         observer.complete();
       }, 800); // Simulate email sending delay
     });
   }
 
   register(user: { name: string; email: string; password: string }): Observable<boolean> {
-    // Check if email already exists
-    const existingUser = this.mockUsers.find(u => u.email === user.email);
-    
-    if (existingUser) {
-      return new Observable(observer => {
-        setTimeout(() => {
-          observer.error(new Error('Email already exists'));
-        }, 500);
-      });
-    }
-
-    const newUser = {
-      id: this.mockUsers.length + 1,
+    const registerRequest: RegisterRequest = {
       name: user.name,
       email: user.email,
-      password: user.password,
-      role: '' // Role will be set later
+      password: user.password
     };
-    
-    this.mockUsers.push(newUser);
-    
-    // Return success without logging in
-    return of(true).pipe(delay(500));
+
+    return this.http.post<RegisterResponse>(`${this.API_BASE_URL}/register`, registerRequest).pipe(
+      map((response: RegisterResponse) => {
+        // Store user data for later use
+        localStorage.setItem('temp_user_id', response.id.toString());
+        localStorage.setItem('temp_user_name', response.name);
+        localStorage.setItem('temp_user_email', response.email);
+        return true;
+      }),
+      catchError(error => {
+        console.error('Registration error:', error);
+        if (error.status === 400) {
+          return throwError(() => new Error('Email already exists'));
+        }
+        return throwError(() => new Error('Registration failed. Please try again.'));
+      })
+    );
   }
 
   selectRole(role: string): Observable<boolean> {
     const currentUser = this.getCurrentUser();
     if (currentUser) {
-      // Update user role in mock data
-      const userIndex = this.mockUsers.findIndex(u => u.id === currentUser.id);
-      if (userIndex !== -1) {
-        this.mockUsers[userIndex].role = role;
-      }
-      
       // Update current user
       const updatedUser = { ...currentUser, role };
       this.currentUserSubject.next(updatedUser);
@@ -230,6 +196,12 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_role');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('temp_user_id');
+    localStorage.removeItem('temp_user_name');
+    localStorage.removeItem('temp_user_email');
+    localStorage.removeItem('temp_user_role');
     this.currentUserSubject.next(null);
   }
 
@@ -253,33 +225,20 @@ export class AuthService {
 
   private checkAuthStatus(): void {
     const token = localStorage.getItem('auth_token');
-    if (token) {
-      // Check if it's an admin token
-      if (token.startsWith('admin-token-')) {
-        const adminUser = {
-          id: 999,
-          name: 'Administrator',
-          email: 'admin@admin.com',
-          role: 'admin'
-        };
-        this.currentUserSubject.next(adminUser);
-        return;
-      }
-      
-      // Extract user ID from mock token
-      const userId = parseInt(token.replace('mock-token-', ''));
-      const user = this.mockUsers.find(u => u.id === userId);
-      if (user) {
-        const role = localStorage.getItem('user_role') || user.role || '';
-        this.currentUserSubject.next({ 
-          id: user.id, 
-          name: user.name, 
-          email: user.email, 
-          role 
-        });
-      } else {
-        this.logout();
-      }
+    const userId = localStorage.getItem('user_id');
+    const userEmail = localStorage.getItem('user_email');
+    const userRole = localStorage.getItem('user_role');
+    
+    if (token && userId && userEmail) {
+      const user: User = {
+        id: parseInt(userId),
+        name: localStorage.getItem('temp_user_name') || '', // Get name from temp storage
+        email: userEmail,
+        role: userRole || 'guest'
+      };
+      this.currentUserSubject.next(user);
+    } else {
+      this.logout();
     }
   }
 }

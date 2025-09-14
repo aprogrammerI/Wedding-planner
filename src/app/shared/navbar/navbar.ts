@@ -27,12 +27,7 @@ export class Navbar {
   getRoleIcon(): string {
     const currentRole = this.authService.getCurrentUserRole();
     if (currentRole) {
-      // Special handling for admin role
-      if (currentRole === 'admin') {
-        return 'assets/admin.png';
-      }
-      
-      // For other roles, find in available roles
+      // Find role in available roles
       const roleOption = this.authService.availableRoles.find(role => role.role === currentRole);
       return roleOption ? roleOption.icon : 'assets/user.png';
     }

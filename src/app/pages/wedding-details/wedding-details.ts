@@ -4,23 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../services/auth.service';
-import { GuestService, Guest } from '../../services/guest.service';
-import { TaskService, Task } from '../../services/task.service';
-import { BudgetService, Expense } from '../../services/budget.service';
-
-interface CoupleDetails {
-  brideFirstName: string;
-  brideLastName: string;
-  brideAge: number;
-  groomFirstName: string;
-  groomLastName: string;
-  groomAge: number;
-}
-
-interface EventInformation {
-  date: string;
-  location: string;
-}
+import { WeddingDetailsService, CoupleDetails, EventInformation, EventItinerary } from '../../services/wedding-details.service';
 
 interface GuestSummary {
   brideGuests: number;
@@ -40,16 +24,6 @@ interface BudgetOverview {
   spentAmount: number;
   remainingAmount: number;
   progressPercentage: number;
-}
-
-interface EventItinerary {
-  time: string;
-  event: string;
-  description: string;
-  isEditing?: boolean;
-  hour?: number;
-  minute?: number;
-  amPm?: string;
 }
 
 @Component({
@@ -117,120 +91,70 @@ export class WeddingDetails implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private guestService: GuestService,
-    private taskService: TaskService,
-    private budgetService: BudgetService
+    private weddingDetailsService: WeddingDetailsService
   ) {}
 
   ngOnInit() {
     this.loadWeddingDetails();
-    this.loadRealData();
-  }
-
-  private calculateGuestSummary(guests: Guest[]) {
-    const brideGuests = guests.filter(g => g.side === 'bride').length;
-    const groomGuests = guests.filter(g => g.side === 'groom').length;
-    const confirmedRSVPs = guests.filter(g => g.status === 'accepted').length;
-
-    this.guestSummary = {
-      brideGuests,
-      groomGuests,
-      totalGuests: guests.length,
-      confirmedRSVPs
-    };
-  }
-
-  private calculateTaskProgress(tasks: Task[]) {
-    const completedTasks = tasks.filter(t => t.done).length;
-    const totalTasks = tasks.length;
-    const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-    this.checklistProgress = {
-      completedTasks,
-      totalTasks,
-      progressPercentage
-    };
-  }
-
-  private calculateBudgetOverview(expenses: Expense[]) {
-    const spentAmount = expenses.reduce((total, expense) => total + expense.amount, 0);
-    // Get the actual budget from localStorage (same as budget page)
-    const totalBudget = Number(localStorage.getItem('userBudget')) || 0;
-    const remainingAmount = Math.max(0, totalBudget - spentAmount);
-    const progressPercentage = totalBudget > 0 ? Math.min(100, Math.round((spentAmount / totalBudget) * 100)) : 0;
-
-    this.budgetOverview = {
-      totalBudget,
-      spentAmount,
-      remainingAmount,
-      progressPercentage
-    };
   }
 
   private loadWeddingDetails() {
+    this.weddingDetailsService.getWeddingDetailsPage().subscribe({
+      next: (data) => {
+        const frontendData = this.weddingDetailsService.mapWeddingDetailsPageToFrontend(data);
+        
+        // Update component properties
+        this.coupleDetails = frontendData.coupleDetails;
+        this.eventInformation = frontendData.eventInformation;
+        this.guestSummary = frontendData.guestSummary;
+        this.checklistProgress = frontendData.checklistProgress;
+        this.budgetOverview = frontendData.budgetOverview;
+        this.eventItinerary = frontendData.eventItinerary;
+        
+        // Show couple photo if details are available
+        if (this.coupleDetails.brideFirstName && this.coupleDetails.groomFirstName) {
+          this.showCouplePhoto = true;
+        }
+        
+        // Sort itinerary by time
+        this.sortItineraryByTime();
+      },
+      error: (error) => {
+        console.error('Error loading wedding details:', error);
+        // Keep default values if there's an error
+        this.loadFallbackData();
+      }
+    });
+  }
+
+  private loadFallbackData() {
+    // Fallback to localStorage if backend fails
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) return;
 
     const userId = currentUser.id;
     
-    // Load couple details from localStorage with user-specific key
+    // Load couple details from localStorage
     const savedCoupleDetails = localStorage.getItem(`weddingCoupleDetails_${userId}`);
     if (savedCoupleDetails) {
       this.coupleDetails = JSON.parse(savedCoupleDetails);
-      // Show the couple photo if details are already saved
       if (this.coupleDetails.brideFirstName && this.coupleDetails.groomFirstName) {
         this.showCouplePhoto = true;
       }
     }
 
-    // Load event information from localStorage with user-specific key
+    // Load event information from localStorage
     const savedEventInfo = localStorage.getItem(`weddingEventInfo_${userId}`);
     if (savedEventInfo) {
       this.eventInformation = JSON.parse(savedEventInfo);
     }
 
-    // Load event itinerary from localStorage with user-specific key
+    // Load event itinerary from localStorage
     const savedItinerary = localStorage.getItem(`weddingItinerary_${userId}`);
     if (savedItinerary) {
       this.eventItinerary = JSON.parse(savedItinerary);
-      // Sort existing itinerary by time
       this.sortItineraryByTime();
     }
-  }
-
-  private loadRealData() {
-    // Load guest data
-    this.guestService.list().subscribe({
-      next: (guests) => {
-        this.calculateGuestSummary(guests);
-      },
-      error: (error) => {
-        console.error('Error loading guest data:', error);
-        // Keep default values if there's an error
-      }
-    });
-
-    // Load task data
-    this.taskService.list().subscribe({
-      next: (tasks) => {
-        this.calculateTaskProgress(tasks);
-      },
-      error: (error) => {
-        console.error('Error loading task data:', error);
-        // Keep default values if there's an error
-      }
-    });
-
-    // Load budget data
-    this.budgetService.list().subscribe({
-      next: (expenses) => {
-        this.calculateBudgetOverview(expenses);
-      },
-      error: (error) => {
-        console.error('Error loading budget data:', error);
-        // Keep default values if there's an error
-      }
-    });
   }
 
 
@@ -238,12 +162,29 @@ export class WeddingDetails implements OnInit {
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) return;
 
-    // Save couple details to localStorage with user-specific key
-    localStorage.setItem(`weddingCoupleDetails_${currentUser.id}`, JSON.stringify(this.coupleDetails));
-    console.log('Couple details saved for user:', currentUser.id, this.coupleDetails);
-    
-    // Show the couple photo with names
-    this.showCouplePhoto = true;
+    // Create backend DTO
+    const weddingDetailsDTO = this.weddingDetailsService.mapCoupleDetailsToBackend(
+      this.coupleDetails, 
+      this.eventInformation
+    );
+
+    // Save to backend
+    this.weddingDetailsService.saveWeddingDetails(weddingDetailsDTO).subscribe({
+      next: () => {
+        console.log('Couple details saved to backend');
+        // Show the couple photo with names
+        this.showCouplePhoto = true;
+        // Reload data to get updated information
+        this.loadWeddingDetails();
+      },
+      error: (error) => {
+        console.error('Error saving couple details:', error);
+        // Fallback to localStorage
+        localStorage.setItem(`weddingCoupleDetails_${currentUser.id}`, JSON.stringify(this.coupleDetails));
+        this.showCouplePhoto = true;
+        alert('Failed to save to backend. Data saved locally.');
+      }
+    });
   }
 
   editCoupleDetails() {
@@ -255,51 +196,48 @@ export class WeddingDetails implements OnInit {
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) return;
 
-    // Save event information to localStorage with user-specific key
-    localStorage.setItem(`weddingEventInfo_${currentUser.id}`, JSON.stringify(this.eventInformation));
-    console.log('Event information saved for user:', currentUser.id, this.eventInformation);
+    // Create backend DTO
+    const weddingDetailsDTO = this.weddingDetailsService.mapCoupleDetailsToBackend(
+      this.coupleDetails, 
+      this.eventInformation
+    );
+
+    // Save to backend
+    this.weddingDetailsService.saveWeddingDetails(weddingDetailsDTO).subscribe({
+      next: () => {
+        console.log('Event information saved to backend');
+        // Reload data to get updated information
+        this.loadWeddingDetails();
+      },
+      error: (error) => {
+        console.error('Error saving event information:', error);
+        // Fallback to localStorage
+        localStorage.setItem(`weddingEventInfo_${currentUser.id}`, JSON.stringify(this.eventInformation));
+        alert('Failed to save to backend. Data saved locally.');
+      }
+    });
   }
 
   editEventDate() {
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser) return;
-
     this.eventInformation.date = '';
-    // Save the cleared date with user-specific key
-    localStorage.setItem(`weddingEventInfo_${currentUser.id}`, JSON.stringify(this.eventInformation));
-    console.log('Date cleared for user:', currentUser.id);
   }
 
   onDateChange() {
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser) return;
-
     // Auto-save when date is changed
     if (this.eventInformation.date) {
-      localStorage.setItem(`weddingEventInfo_${currentUser.id}`, JSON.stringify(this.eventInformation));
-      console.log('Date saved for user:', currentUser.id, this.eventInformation.date);
+      this.saveEventInformation();
     }
   }
 
   saveLocation() {
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser) return;
-
-    // Save event information to localStorage when location is updated
+    // Save event information when location is updated
     if (this.eventInformation.location && this.eventInformation.location.trim()) {
-      localStorage.setItem(`weddingEventInfo_${currentUser.id}`, JSON.stringify(this.eventInformation));
-      console.log('Location saved for user:', currentUser.id, this.eventInformation.location);
+      this.saveEventInformation();
     }
   }
 
   editLocation() {
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser) return;
-
     this.eventInformation.location = '';
-    // Save the cleared location with user-specific key
-    localStorage.setItem(`weddingEventInfo_${currentUser.id}`, JSON.stringify(this.eventInformation));
-    console.log('Location cleared for user:', currentUser.id);
   }
 
   toggleDatePicker(event: Event) {
@@ -324,29 +262,64 @@ export class WeddingDetails implements OnInit {
   }
 
   saveItem(index: number) {
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser) return;
-
-    this.eventItinerary[index].isEditing = false;
-    // Save itinerary to localStorage with user-specific key
-    localStorage.setItem(`weddingItinerary_${currentUser.id}`, JSON.stringify(this.eventItinerary));
-    console.log('Itinerary item saved for user:', currentUser.id);
+    const item = this.eventItinerary[index];
+    if (!item.id) {
+      // New item - add to backend
+      const backendItem = this.weddingDetailsService.mapItineraryItemToBackend(item);
+      this.weddingDetailsService.addItineraryItem(backendItem).subscribe({
+        next: (savedItem) => {
+          this.eventItinerary[index] = this.weddingDetailsService.mapItineraryItemToFrontend(savedItem);
+          this.eventItinerary[index].isEditing = false;
+          this.sortItineraryByTime();
+        },
+        error: (error) => {
+          console.error('Error saving itinerary item:', error);
+          alert('Failed to save itinerary item. Please try again.');
+        }
+      });
+    } else {
+      // Existing item - update in backend
+      const backendItem = this.weddingDetailsService.mapItineraryItemToBackend(item);
+      this.weddingDetailsService.updateItineraryItem(item.id, backendItem).subscribe({
+        next: (savedItem) => {
+          this.eventItinerary[index] = this.weddingDetailsService.mapItineraryItemToFrontend(savedItem);
+          this.eventItinerary[index].isEditing = false;
+          this.sortItineraryByTime();
+        },
+        error: (error) => {
+          console.error('Error updating itinerary item:', error);
+          alert('Failed to update itinerary item. Please try again.');
+        }
+      });
+    }
   }
 
   cancelEditItem(index: number) {
     // Reset to original values if needed
     this.eventItinerary[index].isEditing = false;
+    // Reload data to get original values
+    this.loadWeddingDetails();
   }
 
-
   removeItineraryItem(index: number) {
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser) return;
+    const item = this.eventItinerary[index];
+    if (!item.id) {
+      // New item not yet saved - just remove from array
+      this.eventItinerary.splice(index, 1);
+      return;
+    }
 
-    this.eventItinerary.splice(index, 1);
-    // Save itinerary to localStorage with user-specific key
-    localStorage.setItem(`weddingItinerary_${currentUser.id}`, JSON.stringify(this.eventItinerary));
-    console.log('Itinerary item removed for user:', currentUser.id);
+    // Delete from backend
+    this.weddingDetailsService.deleteItineraryItem(item.id).subscribe({
+      next: () => {
+        this.eventItinerary.splice(index, 1);
+        console.log('Itinerary item removed from backend');
+      },
+      error: (error) => {
+        console.error('Error deleting itinerary item:', error);
+        alert('Failed to delete itinerary item. Please try again.');
+      }
+    });
   }
 
   updateItineraryItem(index: number, field: keyof EventItinerary, event: any) {
@@ -427,12 +400,6 @@ export class WeddingDetails implements OnInit {
     
     // Sort itinerary after time update
     this.sortItineraryByTime();
-    
-    // Save to localStorage
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser) {
-      localStorage.setItem(`weddingItinerary_${currentUser.id}`, JSON.stringify(this.eventItinerary));
-    }
   }
 
   sortItineraryByTime() {
@@ -462,9 +429,6 @@ export class WeddingDetails implements OnInit {
   }
 
   addItineraryItem() {
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser) return;
-
     if (this.newItineraryItem.event && this.newItineraryItem.description) {
       // Create time string from individual components
       const hour = this.newItineraryItem.hour || 12;
@@ -472,29 +436,40 @@ export class WeddingDetails implements OnInit {
       const amPm = this.newItineraryItem.amPm || 'PM';
       const timeString = `${hour}:${minute.toString().padStart(2, '0')} ${amPm}`;
 
-      this.eventItinerary.push({ 
+      const newItem: EventItinerary = { 
         time: timeString,
         event: this.newItineraryItem.event, 
         description: this.newItineraryItem.description,
         isEditing: false 
-      });
-      
-      // Sort itinerary by time
-      this.sortItineraryByTime();
-      
-      // Reset form
-      this.newItineraryItem = { 
-        time: '', 
-        event: '', 
-        description: '', 
-        hour: 12, 
-        minute: 0, 
-        amPm: 'PM' 
       };
-      
-      // Save itinerary to localStorage with user-specific key
-      localStorage.setItem(`weddingItinerary_${currentUser.id}`, JSON.stringify(this.eventItinerary));
-      console.log('New itinerary item added and sorted for user:', currentUser.id);
+
+      // Add to backend
+      const backendItem = this.weddingDetailsService.mapItineraryItemToBackend(newItem);
+      this.weddingDetailsService.addItineraryItem(backendItem).subscribe({
+        next: (savedItem) => {
+          const frontendItem = this.weddingDetailsService.mapItineraryItemToFrontend(savedItem);
+          this.eventItinerary.push(frontendItem);
+          
+          // Sort itinerary by time
+          this.sortItineraryByTime();
+          
+          // Reset form
+          this.newItineraryItem = { 
+            time: '', 
+            event: '', 
+            description: '', 
+            hour: 12, 
+            minute: 0, 
+            amPm: 'PM' 
+          };
+          
+          console.log('New itinerary item added to backend');
+        },
+        error: (error) => {
+          console.error('Error adding itinerary item:', error);
+          alert('Failed to add itinerary item. Please try again.');
+        }
+      });
     }
   }
 }

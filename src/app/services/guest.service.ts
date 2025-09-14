@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
+// Frontend interfaces (for component usage)
 export interface Guest {
   id: number;
   name: string;
@@ -14,43 +16,175 @@ export interface Guest {
   rsvpDropdownOpen?: boolean;
 }
 
+// Backend DTO interfaces
+export interface GuestDto {
+  id: number;
+  name: string;
+  rsvpStatus?: 'ACCEPTED' | 'PENDING' | 'DECLINED';
+  side?: 'BRIDE' | 'GROOM';
+  role?: 'BRIDESMAID' | 'BEST_MAN' | 'PARENT' | 'RELATIVE' | 'FRIEND' | 'GUEST';
+  tableNumber?: number;
+  mealPlan?: string;
+  comments?: string;
+}
+
+export interface GuestCreateRequest {
+  name: string;
+  side?: 'BRIDE' | 'GROOM';
+  role?: 'BRIDESMAID' | 'BEST_MAN' | 'PARENT' | 'RELATIVE' | 'FRIEND' | 'GUEST';
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class GuestService {
-  private guests: Guest[] = [
-    { id: 1, name: 'John Doe', status: 'accepted', side: 'bride', role: 'relative', tableNumber: 1, mealPlan: 'Chicken', comments: 'No onions' },
-    { id: 2, name: 'Jane Smith', status: 'pending', side: 'bride', role: 'bridesmaid', tableNumber: 2, mealPlan: 'Vegetarian', comments: '' },
-    { id: 3, name: 'Mike Johnson', status: 'declined', side: 'groom', role: 'best man', tableNumber: 3, mealPlan: 'Beef', comments: 'Allergic to nuts' },
-    { id: 4, name: 'Sarah Wilson', status: 'accepted', side: 'groom', role: 'parent', tableNumber: 1, mealPlan: 'Fish', comments: '' },
-    { id: 5, name: 'David Brown', status: 'pending', side: 'bride', role: 'friend', tableNumber: 2, mealPlan: '', comments: '' }
-  ];
+  private readonly API_BASE_URL = 'http://localhost:8080/api/guests';
 
-  private nextId = 6;
+  constructor(private http: HttpClient) {}
 
-  list(): Observable<Guest[]> {
-    return of(this.guests).pipe(delay(100));
+  // Mapping methods between frontend and backend
+  private mapGuestDtoToGuest(dto: GuestDto): Guest {
+    return {
+      id: dto.id,
+      name: dto.name,
+      status: this.mapRsvpStatusToString(dto.rsvpStatus || 'PENDING'),
+      side: this.mapGuestSideToString(dto.side || 'BRIDE'),
+      role: dto.role ? this.mapGuestRoleToString(dto.role) : undefined,
+      tableNumber: dto.tableNumber,
+      mealPlan: dto.mealPlan,
+      comments: dto.comments
+    };
+  }
+
+  private mapGuestToGuestDto(guest: Guest): GuestDto {
+    return {
+      id: guest.id,
+      name: guest.name,
+      rsvpStatus: this.mapStringToRsvpStatus(guest.status),
+      side: this.mapStringToGuestSide(guest.side),
+      role: guest.role ? this.mapStringToGuestRole(guest.role) : undefined,
+      tableNumber: guest.tableNumber,
+      mealPlan: guest.mealPlan,
+      comments: guest.comments
+    };
+  }
+
+  private mapRsvpStatusToString(status: 'ACCEPTED' | 'PENDING' | 'DECLINED'): 'pending' | 'accepted' | 'declined' {
+    switch (status) {
+      case 'ACCEPTED': return 'accepted';
+      case 'PENDING': return 'pending';
+      case 'DECLINED': return 'declined';
+      default: return 'pending';
+    }
+  }
+
+  private mapStringToRsvpStatus(status: 'pending' | 'accepted' | 'declined'): 'ACCEPTED' | 'PENDING' | 'DECLINED' {
+    switch (status) {
+      case 'accepted': return 'ACCEPTED';
+      case 'pending': return 'PENDING';
+      case 'declined': return 'DECLINED';
+      default: return 'PENDING';
+    }
+  }
+
+  private mapGuestSideToString(side: 'BRIDE' | 'GROOM'): 'bride' | 'groom' {
+    switch (side) {
+      case 'BRIDE': return 'bride';
+      case 'GROOM': return 'groom';
+      default: return 'bride';
+    }
+  }
+
+  private mapStringToGuestSide(side: 'bride' | 'groom'): 'BRIDE' | 'GROOM' {
+    switch (side) {
+      case 'bride': return 'BRIDE';
+      case 'groom': return 'GROOM';
+      default: return 'BRIDE';
+    }
+  }
+
+  private mapGuestRoleToString(role: 'BRIDESMAID' | 'BEST_MAN' | 'PARENT' | 'RELATIVE' | 'FRIEND' | 'GUEST'): 'bridesmaid' | 'best man' | 'parent' | 'relative' | 'friend' | 'guest' {
+    switch (role) {
+      case 'BRIDESMAID': return 'bridesmaid';
+      case 'BEST_MAN': return 'best man';
+      case 'PARENT': return 'parent';
+      case 'RELATIVE': return 'relative';
+      case 'FRIEND': return 'friend';
+      case 'GUEST': return 'guest';
+      default: return 'guest';
+    }
+  }
+
+  private mapStringToGuestRole(role: 'bridesmaid' | 'best man' | 'parent' | 'relative' | 'friend' | 'guest'): 'BRIDESMAID' | 'BEST_MAN' | 'PARENT' | 'RELATIVE' | 'FRIEND' | 'GUEST' {
+    switch (role) {
+      case 'bridesmaid': return 'BRIDESMAID';
+      case 'best man': return 'BEST_MAN';
+      case 'parent': return 'PARENT';
+      case 'relative': return 'RELATIVE';
+      case 'friend': return 'FRIEND';
+      case 'guest': return 'GUEST';
+      default: return 'GUEST';
+    }
+  }
+
+  list(groupBy?: string, sortBy?: string, sortOrder: string = 'ASC'): Observable<Guest[]> {
+    let params = new HttpParams();
+    if (groupBy) params = params.set('groupBy', groupBy);
+    if (sortBy) params = params.set('sortBy', sortBy);
+    if (sortOrder) params = params.set('sortOrder', sortOrder);
+
+    return this.http.get<GuestDto[]>(this.API_BASE_URL, { params }).pipe(
+      map(dtos => dtos.map(dto => this.mapGuestDtoToGuest(dto))),
+      catchError(error => {
+        console.error('Error fetching guests:', error);
+        return throwError(() => new Error('Failed to fetch guests'));
+      })
+    );
   }
 
   add(guest: Omit<Guest, 'id'>): Observable<Guest> {
-    const newGuest: Guest = {
-      ...guest,
-      id: this.nextId++
+    const createRequest: GuestCreateRequest = {
+      name: guest.name,
+      side: this.mapStringToGuestSide(guest.side),
+      role: guest.role ? this.mapStringToGuestRole(guest.role) : undefined
     };
-    this.guests.push(newGuest);
-    return of(newGuest).pipe(delay(100));
+
+    return this.http.post<GuestDto>(this.API_BASE_URL, createRequest).pipe(
+      map(dto => this.mapGuestDtoToGuest(dto)),
+      catchError(error => {
+        console.error('Error creating guest:', error);
+        return throwError(() => new Error('Failed to create guest'));
+      })
+    );
   }
 
   update(guest: Guest): Observable<Guest> {
-    const index = this.guests.findIndex(g => g.id === guest.id);
-    if (index !== -1) {
-      this.guests[index] = guest;
-    }
-    return of(guest).pipe(delay(100));
+    const guestDto = this.mapGuestToGuestDto(guest);
+    return this.http.put<GuestDto>(`${this.API_BASE_URL}/${guest.id}`, guestDto).pipe(
+      map(dto => this.mapGuestDtoToGuest(dto)),
+      catchError(error => {
+        console.error('Error updating guest:', error);
+        return throwError(() => new Error('Failed to update guest'));
+      })
+    );
   }
 
   remove(id: number): Observable<void> {
-    this.guests = this.guests.filter(g => g.id !== id);
-    return of(void 0).pipe(delay(100));
+    return this.http.delete<void>(`${this.API_BASE_URL}/${id}`).pipe(
+      catchError(error => {
+        console.error('Error deleting guest:', error);
+        return throwError(() => new Error('Failed to delete guest'));
+      })
+    );
+  }
+
+  getById(id: number): Observable<Guest> {
+    return this.http.get<GuestDto>(`${this.API_BASE_URL}/${id}`).pipe(
+      map(dto => this.mapGuestDtoToGuest(dto)),
+      catchError(error => {
+        console.error('Error fetching guest:', error);
+        return throwError(() => new Error('Failed to fetch guest'));
+      })
+    );
   }
 }

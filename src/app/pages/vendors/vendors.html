@@ -135,7 +135,7 @@
               <label class="form-label mb-1">Assign Task:</label>
               <select class="form-select form-select-sm d-inline w-auto" (change)="handleAssignTaskToVendor($event, v.id)" [value]="''">
                 <option value="">Select task...</option>
-                <option *ngFor="let t of getUnassignedTasks()" [value]="t.id">{{ t.title }}</option>
+                <option *ngFor="let t of getAvailableTasksForVendor(v.id)" [value]="t.id">{{ t.title }}</option>
               </select>
             </div>
             <div *ngIf="getTasksForVendor(v.id).length > 0">
@@ -143,7 +143,7 @@
               <ul class="list-unstyled mb-0">
                 <li *ngFor="let t of getTasksForVendor(v.id)" class="d-flex align-items-center gap-2">
                   <span>{{ t.title }}</span>
-                  <button class="btn btn-sm btn-outline-danger py-0 px-2" (click)="unassignTaskFromVendor(t)">Unassign</button>
+                  <button class="btn btn-sm btn-outline-danger py-0 px-2" (click)="unassignTaskFromVendor(t.id, v.id)">Unassign</button>
                 </li>
               </ul>
             </div>

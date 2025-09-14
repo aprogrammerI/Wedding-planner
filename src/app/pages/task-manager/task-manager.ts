@@ -116,34 +116,59 @@ export class TaskManager implements OnInit {
         reminderDate: reminderDate,
         reminderEnabled: this.newReminderEnabled,
       })
-      .subscribe(_ => { 
-        this.newTitle = ''; 
-        this.newDescription = '';
-        this.newDueDate = '';
-        this.newPriority = 'medium';
-        this.newAssignedTo = '';
-        this.newReminderDate = '';
-        this.newReminderEnabled = false;
-        this.showAddForm = false;
-        this.load(); 
+      .subscribe({
+        next: () => { 
+          this.newTitle = ''; 
+          this.newDescription = '';
+          this.newDueDate = '';
+          this.newPriority = 'medium';
+          this.newAssignedTo = '';
+          this.newReminderDate = '';
+          this.newReminderEnabled = false;
+          this.showAddForm = false;
+          this.load(); 
+        },
+        error: (error) => {
+          console.error('Error adding task:', error);
+          alert('Failed to add task. Please try again.');
+        }
       });
   }
 
   toggle(t: Task) {
     t.done = !t.done;
-    this.svc.update(t).subscribe(() => this.loadReminders());
+    this.svc.update(t).subscribe({
+      next: () => this.loadReminders(),
+      error: (error) => {
+        console.error('Error updating task:', error);
+        t.done = !t.done; // Revert the change
+        alert('Failed to update task. Please try again.');
+      }
+    });
   }
 
   onDoneChange(task: Task, checked: boolean) {
     const updated: Task = { ...task, done: checked };
-    this.svc.update(updated).subscribe(() => {
-      Object.assign(task, updated);
-      this.loadReminders();
+    this.svc.update(updated).subscribe({
+      next: () => {
+        Object.assign(task, updated);
+        this.loadReminders();
+      },
+      error: (error) => {
+        console.error('Error updating task:', error);
+        alert('Failed to update task. Please try again.');
+      }
     });
   }
 
   remove(id: number) { 
-    this.svc.remove(id).subscribe(_ => this.load()); 
+    this.svc.remove(id).subscribe({
+      next: () => this.load(),
+      error: (error) => {
+        console.error('Error deleting task:', error);
+        alert('Failed to delete task. Please try again.');
+      }
+    });
   }
 
   startEdit(task: Task) {
@@ -174,9 +199,15 @@ export class TaskManager implements OnInit {
       reminderEnabled: !!this.editDraft.reminderEnabled,
     };
     if (!updated.title) { return; }
-    this.svc.update(updated).subscribe(_ => {
-      this.cancelEdit();
-      this.load();
+    this.svc.update(updated).subscribe({
+      next: () => {
+        this.cancelEdit();
+        this.load();
+      },
+      error: (error) => {
+        console.error('Error updating task:', error);
+        alert('Failed to update task. Please try again.');
+      }
     });
   }
 
@@ -321,7 +352,15 @@ export class TaskManager implements OnInit {
   addSubtask(task: Task) {
     const subtaskTitle = prompt('Enter subtask title:');
     if (subtaskTitle && subtaskTitle.trim()) {
-      this.svc.addSubtask(task.id, subtaskTitle.trim()).subscribe();
+      this.svc.addSubtask(task.id, subtaskTitle.trim()).subscribe({
+        next: () => {
+          this.load(); // Refresh the task list
+        },
+        error: (error) => {
+          console.error('Error adding subtask:', error);
+          alert('Failed to add subtask. Please try again.');
+        }
+      });
     }
   }
 
@@ -340,15 +379,29 @@ export class TaskManager implements OnInit {
   editSubtask(task: Task, sub: any) {
     const newTitle = prompt('Edit subtask title:', sub.title);
     if (newTitle && newTitle.trim() && newTitle !== sub.title) {
-      this.svc.updateSubtask(task.id, sub.id, { title: newTitle.trim() }).subscribe(updated => {
-        sub.title = updated.title;
+      this.svc.updateSubtask(task.id, sub.id, { title: newTitle.trim() }).subscribe({
+        next: (updated) => {
+          sub.title = updated.title;
+        },
+        error: (error) => {
+          console.error('Error updating subtask:', error);
+          alert('Failed to update subtask. Please try again.');
+        }
       });
     }
   }
 
   deleteSubtask(task: Task, sub: any) {
     if (confirm('Delete this subtask?')) {
-      this.svc.deleteSubtask(task.id, sub.id).subscribe();
+      this.svc.deleteSubtask(task.id, sub.id).subscribe({
+        next: () => {
+          this.load(); // Refresh the task list
+        },
+        error: (error) => {
+          console.error('Error deleting subtask:', error);
+          alert('Failed to delete subtask. Please try again.');
+        }
+      });
     }
   }
 

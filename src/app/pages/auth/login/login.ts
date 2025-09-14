@@ -43,27 +43,6 @@ export class Login {
     });
   }
 
-  loginWithGoogle() {
-    this.error = '';
-    this.successMessage = '';
-    this.isLoading = true;
-    
-    this.auth.loginWithGoogle().subscribe({
-      next: () => {
-        this.isLoading = false;
-        // Check if user has a role, if not redirect to role selection
-        if (this.auth.hasRole()) {
-          this.router.navigate(['/home']);
-        } else {
-          this.router.navigate(['/role-selection']);
-        }
-      },
-      error: () => {
-        this.error = 'Google login failed. Please try again.';
-        this.isLoading = false;
-      }
-    });
-  }
 
   forgotPassword() {
     if (!this.forgotPasswordEmail.trim()) {

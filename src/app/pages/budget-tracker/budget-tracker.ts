@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { BudgetService, Expense } from '../../services/budget.service';
+import { BudgetService, Expense, BudgetDTO, BudgetCategoryDTO } from '../../services/budget.service';
 import { VENDOR_CATEGORIES } from '../../services/vendor.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,18 +24,48 @@ export class BudgetTracker implements OnInit {
   editingId: number | null = null;
   editDraft: Partial<Expense> = {};
 
+  // Backend budget data
+  budgetData: BudgetDTO | null = null;
   budget: number = 0;
+  totalSpent: number = 0;
+  remaining: number = 0;
   budgetKey = 'userBudget';
 
   categoryLimits: { [category: string]: number } = {};
   categoryLimitsKey = 'categoryLimits';
+  categoryData: BudgetCategoryDTO[] = [];
 
   constructor(private svc: BudgetService) {}
 
   ngOnInit() {
-    this.loadBudget();
+    this.loadBudgetData();
     this.loadCategoryLimits();
     this.load();
+  }
+
+  loadBudgetData() {
+    this.svc.getBudget().subscribe({
+      next: (budgetDTO) => {
+        this.budgetData = budgetDTO;
+        this.budget = budgetDTO.totalBudget || 0;
+        this.totalSpent = budgetDTO.totalSpent || 0;
+        this.remaining = budgetDTO.remaining || 0;
+        this.categoryData = budgetDTO.allCategoryDTOs || [];
+        
+        // Update category limits from backend data
+        this.categoryData.forEach(category => {
+          this.categoryLimits[this.mapCategoryTypeToString(category.categoryType)] = category.limit;
+        });
+        
+        this.saveBudget();
+        this.saveCategoryLimits();
+      },
+      error: (error) => {
+        console.error('Error loading budget data:', error);
+        // Fallback to localStorage if backend fails
+        this.loadBudget();
+      }
+    });
   }
 
   loadBudget() {
@@ -45,6 +75,27 @@ export class BudgetTracker implements OnInit {
 
   saveBudget() {
     localStorage.setItem(this.budgetKey, String(this.budget));
+  }
+
+  updateBudgetInBackend() {
+    if (this.budgetData) {
+      const updatedBudget: BudgetDTO = {
+        ...this.budgetData,
+        totalBudget: this.budget
+      };
+      
+      this.svc.updateBudget(updatedBudget).subscribe({
+        next: (budgetDTO) => {
+          this.budgetData = budgetDTO;
+          this.totalSpent = budgetDTO.totalSpent || 0;
+          this.remaining = budgetDTO.remaining || 0;
+        },
+        error: (error) => {
+          console.error('Error updating budget:', error);
+          alert('Failed to update budget. Please try again.');
+        }
+      });
+    }
   }
 
   loadCategoryLimits() {
@@ -59,6 +110,42 @@ export class BudgetTracker implements OnInit {
   setCategoryLimit(category: string, value: number) {
     this.categoryLimits[category] = value;
     this.saveCategoryLimits();
+    
+    // Update in backend
+    const categoryType = this.mapStringToCategoryType(category);
+    this.svc.updateCategoryLimit(categoryType, value).subscribe({
+      next: (updatedCategory) => {
+        console.log('Category limit updated:', updatedCategory);
+      },
+      error: (error) => {
+        console.error('Error updating category limit:', error);
+        alert('Failed to update category limit. Please try again.');
+      }
+    });
+  }
+
+  private mapCategoryTypeToString(categoryType: 'EVENT_PLANNING' | 'PHOTOGRAPHY' | 'CATERING' | 'FLOWERS' | 'MUSIC' | 'VENUES'): string {
+    switch (categoryType) {
+      case 'EVENT_PLANNING': return 'Event Planning';
+      case 'PHOTOGRAPHY': return 'Photography';
+      case 'CATERING': return 'Catering';
+      case 'FLOWERS': return 'Flowers';
+      case 'MUSIC': return 'Music';
+      case 'VENUES': return 'Venues';
+      default: return 'Other';
+    }
+  }
+
+  private mapStringToCategoryType(category: string): 'EVENT_PLANNING' | 'PHOTOGRAPHY' | 'CATERING' | 'FLOWERS' | 'MUSIC' | 'VENUES' {
+    switch (category.toLowerCase()) {
+      case 'event planning': return 'EVENT_PLANNING';
+      case 'photography': return 'PHOTOGRAPHY';
+      case 'catering': return 'CATERING';
+      case 'flowers': return 'FLOWERS';
+      case 'music': return 'MUSIC';
+      case 'venues': return 'VENUES';
+      default: return 'EVENT_PLANNING';
+    }
   }
 
   getCategoryLimit(category: string): number {
@@ -71,33 +158,55 @@ export class BudgetTracker implements OnInit {
   }
 
   get overBudget(): boolean {
-    return this.total() > this.budget && this.budget > 0;
+    return this.totalSpent > this.budget && this.budget > 0;
   }
 
   get remainingBudget(): number {
-    return this.budget - this.total();
+    return this.remaining;
   }
 
   load() {
-    this.svc.list().subscribe(x => {
-      this.expenses = x;
-      this.recomputeChart();
+    this.svc.list().subscribe({
+      next: (expenses) => {
+        this.expenses = expenses;
+        this.recomputeChart();
+      },
+      error: (error) => {
+        console.error('Error loading expenses:', error);
+        alert('Failed to load expenses. Please try again.');
+      }
     });
   }
 
   add() {
     if (!this.newName.trim() || !this.newAmount) return;
     this.svc.add({ name: this.newName, amount: this.newAmount, category: this.newCategory || undefined })
-      .subscribe(_ => {
-        this.newName = '';
-        this.newAmount = 0;
-        this.newCategory = '';
-        this.load();
+      .subscribe({
+        next: () => {
+          this.newName = '';
+          this.newAmount = 0;
+          this.newCategory = '';
+          this.load();
+          this.loadBudgetData(); // Refresh budget data
+        },
+        error: (error) => {
+          console.error('Error adding expense:', error);
+          alert('Failed to add expense. Please try again.');
+        }
       });
   }
 
   remove(id: number) {
-    this.svc.remove(id).subscribe(_ => this.load());
+    this.svc.remove(id).subscribe({
+      next: () => {
+        this.load();
+        this.loadBudgetData(); // Refresh budget data
+      },
+      error: (error) => {
+        console.error('Error removing expense:', error);
+        alert('Failed to remove expense. Please try again.');
+      }
+    });
   }
 
   total() {
@@ -159,9 +268,16 @@ export class BudgetTracker implements OnInit {
       category: this.editDraft.category || undefined
     };
     if (!updated.name || !updated.amount) return;
-    this.svc.update(updated).subscribe(() => {
-      this.cancelEdit();
-      this.load();
+    this.svc.update(updated).subscribe({
+      next: () => {
+        this.cancelEdit();
+        this.load();
+        this.loadBudgetData(); // Refresh budget data
+      },
+      error: (error) => {
+        console.error('Error updating expense:', error);
+        alert('Failed to update expense. Please try again.');
+      }
     });
   }
 }

@@ -40,7 +40,15 @@ export class GuestList implements OnInit {
   }
 
   load() { 
-    this.svc.list().subscribe(g => this.guests = g); 
+    this.svc.list().subscribe({
+      next: (guests) => {
+        this.guests = guests;
+      },
+      error: (error) => {
+        console.error('Error loading guests:', error);
+        alert('Failed to load guests. Please try again.');
+      }
+    });
   }
 
   get brideGuests() {
@@ -68,30 +76,58 @@ export class GuestList implements OnInit {
   addBrideGuest() {
     if (!this.newBrideName.trim()) return;
     this.svc.add({ name: this.newBrideName, status: 'pending', side: 'bride', role: this.newBrideRole || 'guest' })
-      .subscribe(_ => { 
-        this.newBrideName = ''; 
-        this.newBrideRole = 'guest';
-        this.load(); 
+      .subscribe({
+        next: () => { 
+          this.newBrideName = ''; 
+          this.newBrideRole = 'guest';
+          this.load(); 
+        },
+        error: (error) => {
+          console.error('Error adding bride guest:', error);
+          alert('Failed to add bride guest. Please try again.');
+        }
       });
   }
 
   addGroomGuest() {
     if (!this.newGroomName.trim()) return;
     this.svc.add({ name: this.newGroomName, status: 'pending', side: 'groom', role: this.newGroomRole || 'guest' })
-      .subscribe(_ => { 
-        this.newGroomName = ''; 
-        this.newGroomRole = 'guest';
-        this.load(); 
+      .subscribe({
+        next: () => { 
+          this.newGroomName = ''; 
+          this.newGroomRole = 'guest';
+          this.load(); 
+        },
+        error: (error) => {
+          console.error('Error adding groom guest:', error);
+          alert('Failed to add groom guest. Please try again.');
+        }
       });
   }
 
   toggle(g: Guest) {
     g.status = g.status === 'accepted' ? 'declined' : 'accepted';
-    this.svc.update(g).subscribe();
+    this.svc.update(g).subscribe({
+      next: () => {
+        // Success - no action needed as UI is already updated
+      },
+      error: (error) => {
+        console.error('Error updating guest status:', error);
+        // Revert the change
+        g.status = g.status === 'accepted' ? 'declined' : 'accepted';
+        alert('Failed to update guest status. Please try again.');
+      }
+    });
   }
 
   remove(id: number) { 
-    this.svc.remove(id).subscribe(_ => this.load()); 
+    this.svc.remove(id).subscribe({
+      next: () => this.load(),
+      error: (error) => {
+        console.error('Error removing guest:', error);
+        alert('Failed to remove guest. Please try again.');
+      }
+    });
   }
 
   updateField(g: Guest, field: keyof Guest, value: any) {
@@ -100,7 +136,13 @@ export class GuestList implements OnInit {
       return;
     }
     (g as any)[field] = value;
-    this.svc.update(g).subscribe(() => this.load());
+    this.svc.update(g).subscribe({
+      next: () => this.load(),
+      error: (error) => {
+        console.error('Error updating guest field:', error);
+        alert('Failed to update guest. Please try again.');
+      }
+    });
   }
 
   startEdit(guest: Guest) {
@@ -115,10 +157,16 @@ export class GuestList implements OnInit {
       ...this.editDraft,
       id: this.editingGuestId
     };
-    this.svc.update(updated).subscribe(() => {
-      this.editingGuestId = null;
-      this.editDraft = {};
-      this.load();
+    this.svc.update(updated).subscribe({
+      next: () => {
+        this.editingGuestId = null;
+        this.editDraft = {};
+        this.load();
+      },
+      error: (error) => {
+        console.error('Error updating guest:', error);
+        alert('Failed to update guest. Please try again.');
+      }
     });
   }
 
@@ -135,8 +183,19 @@ export class GuestList implements OnInit {
 
   changeRsvpStatus(g: Guest, status: 'accepted' | 'declined' | 'pending') {
     if (g.status !== status) {
+      const originalStatus = g.status;
       g.status = status;
-      this.svc.update(g).subscribe(() => this.load());
+      this.svc.update(g).subscribe({
+        next: () => {
+          this.load();
+        },
+        error: (error) => {
+          console.error('Error updating RSVP status:', error);
+          // Revert the change
+          g.status = originalStatus;
+          alert('Failed to update RSVP status. Please try again.');
+        }
+      });
     }
     (g as any).rsvpDropdownOpen = false;
   }
