@@ -84,6 +84,8 @@ export class Vendors implements OnInit {
         this.loadAvailableTasks(vendorId);
         // Refresh all tasks
         this.loadTasks();
+        // Refresh vendors list to show updated assigned tasks
+        this.load();
       },
       error: (error) => {
         console.error('Error assigning task to vendor:', error);
@@ -99,6 +101,8 @@ export class Vendors implements OnInit {
         this.loadAvailableTasks(vendorId);
         // Refresh all tasks
         this.loadTasks();
+        // Refresh vendors list to show updated assigned tasks
+        this.load();
       },
       error: (error) => {
         console.error('Error unassigning task from vendor:', error);

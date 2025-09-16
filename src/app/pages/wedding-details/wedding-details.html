@@ -52,7 +52,7 @@
       
       <!-- Couple Photo Display - shown after save -->
       <div *ngIf="showCouplePhoto" class="couple-photo-display">
-        <div class="couple-names">{{ coupleDetails.brideFirstName }} {{ coupleDetails.brideLastName }} & {{ coupleDetails.groomFirstName }} {{ coupleDetails.groomLastName }}</div>
+        <div class="couple-names">{{ coupleDetails.brideFirstName }} & {{ coupleDetails.groomFirstName }}</div>
         <div class="photo-container">
           <img src="assets/couple-details.png" alt="Couple" class="couple-photo">
         </div>
@@ -213,19 +213,13 @@
                 <select class="form-control form-control-sm" 
                         [value]="getHourFromTime(item.time)" 
                         (change)="updateTimeHour(i, $event)">
-                  <option *ngFor="let hour of getHours()" [value]="hour.value">{{ hour.display }}</option>
+                  <option *ngFor="let hour of getHours()" [value]="hour">{{ hour.toString().padStart(2, '0') }}</option>
                 </select>
                 <span class="time-separator">:</span>
                 <select class="form-control form-control-sm" 
                         [value]="getMinuteFromTime(item.time)" 
                         (change)="updateTimeMinute(i, $event)">
                   <option *ngFor="let minute of getMinutes()" [value]="minute">{{ minute.toString().padStart(2, '0') }}</option>
-                </select>
-                <select class="form-control form-control-sm" 
-                        [value]="getAmPmFromTime(item.time)" 
-                        (change)="updateTimeAmPm(i, $event)">
-                  <option value="AM">AM</option>
-                  <option value="PM">PM</option>
                 </select>
               </div>
             </div>
@@ -266,19 +260,13 @@
               <select class="form-control form-control-sm" 
                       [(ngModel)]="newItineraryItem.hour" 
                       name="newHour">
-                <option *ngFor="let hour of getHours()" [value]="hour.value">{{ hour.display }}</option>
+                <option *ngFor="let hour of getHours()" [value]="hour">{{ hour.toString().padStart(2, '0') }}</option>
               </select>
               <span class="time-separator">:</span>
               <select class="form-control form-control-sm" 
                       [(ngModel)]="newItineraryItem.minute" 
                       name="newMinute">
                 <option *ngFor="let minute of getMinutes()" [value]="minute">{{ minute.toString().padStart(2, '0') }}</option>
-              </select>
-              <select class="form-control form-control-sm" 
-                      [(ngModel)]="newItineraryItem.amPm" 
-                      name="newAmPm">
-                <option value="AM">AM</option>
-                <option value="PM">PM</option>
               </select>
             </div>
           </div>

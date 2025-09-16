@@ -29,10 +29,6 @@
     <input [(ngModel)]="newTitle" class="form-control" placeholder="Task title" />
   </div>
   <div class="col-md-2">
-    <label class="form-label">Due date</label>
-    <input type="date" [(ngModel)]="newDueDate" (change)="onDueDateChange()" class="form-control" />
-  </div>
-  <div class="col-md-2">
     <label class="form-label">Priority</label>
     <select [(ngModel)]="newPriority" class="form-select">
       <option value="low">Low</option>
@@ -112,7 +108,7 @@
         </div>
         <ng-template #editForm>
           <div class="row g-2">
-            <div class="col-md-5">
+            <div class="col-md-4">
               <input [(ngModel)]="editDraft.title" 
                      class="form-control form-control-sm" 
                      placeholder="Title" />
@@ -130,7 +126,7 @@
                 <option *ngFor="let user of availableUsers" [value]="user">{{ user }}</option>
               </select>
             </div>
-            <div class="col-md-2 d-flex gap-2">
+            <div class="col-md-3 d-flex gap-2">
               <button (click)="saveEdit()" class="btn btn-sm btn-primary">Save</button>
               <button (click)="cancelEdit()" class="btn btn-sm btn-outline-secondary">Cancel</button>
             </div>
@@ -161,7 +157,7 @@
           </div>
         </ng-template>
       </div>
-      <div class="task-actions" (click)="$event.stopPropagation()">
+      <div class="task-actions" (click)="$event.stopPropagation()" *ngIf="editingTaskId !== task.id">
         <mat-icon class="edit-icon" 
                   (click)="startEdit(task)" 
                   title="Edit Task">edit</mat-icon>

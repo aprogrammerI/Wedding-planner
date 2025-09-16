@@ -17,7 +17,6 @@ export class TaskManager implements OnInit {
   tasks: Task[] = [];
   newTitle = '';
   newDescription = '';
-  newDueDate = '';
   newPriority: Task['priority'] = 'medium';
   newAssignedTo = '';
   newReminderDate = '';
@@ -84,43 +83,28 @@ export class TaskManager implements OnInit {
     this.loadReminders();
   }
 
-  // Sync reminder date with due date when due date changes
-  onDueDateChange() {
-    if (this.newReminderEnabled && this.newDueDate && !this.newReminderDate) {
-      this.newReminderDate = this.newDueDate;
-    }
-  }
-
-  // Sync reminder date with due date when reminder is enabled
+  // Sync reminder date when reminder is enabled
   onReminderEnabledChange() {
-    if (this.newReminderEnabled && this.newDueDate && !this.newReminderDate) {
-      this.newReminderDate = this.newDueDate;
-    }
+    // Reminder date can be set independently now
   }
 
   add() {
     if (!this.newTitle.trim()) return;
     
-    // If reminder is enabled but no reminder date is set, use the due date
-    const reminderDate = this.newReminderEnabled && !this.newReminderDate && this.newDueDate 
-      ? this.newDueDate 
-      : this.newReminderDate || undefined;
-    
     this.svc.add({ 
         title: this.newTitle, 
         done: false,
         description: this.newDescription || undefined,
-        dueDate: this.newDueDate || undefined,
+        dueDate: undefined,
         priority: this.newPriority,
         assignedTo: this.newAssignedTo || undefined,
-        reminderDate: reminderDate,
+        reminderDate: this.newReminderDate || undefined,
         reminderEnabled: this.newReminderEnabled,
       })
       .subscribe({
         next: () => { 
           this.newTitle = ''; 
           this.newDescription = '';
-          this.newDueDate = '';
           this.newPriority = 'medium';
           this.newAssignedTo = '';
           this.newReminderDate = '';
@@ -219,7 +203,6 @@ export class TaskManager implements OnInit {
     this.showAddForm = false;
     this.newTitle = '';
     this.newDescription = '';
-    this.newDueDate = '';
     this.newPriority = 'medium';
     this.newAssignedTo = '';
     this.newReminderDate = '';

@@ -72,22 +72,22 @@ export class WeddingDetails implements OnInit {
   };
 
   eventItinerary: EventItinerary[] = [
-    { time: '2:00 PM', event: 'Ceremony', description: 'Wedding ceremony at the venue', isEditing: false },
-    { time: '3:00 PM', event: 'Cocktail Hour', description: 'Drinks and appetizers', isEditing: false },
-    { time: '4:00 PM', event: 'Reception', description: 'Dinner and dancing', isEditing: false },
-    { time: '5:00 PM', event: 'First Dance', description: 'Couple\'s first dance', isEditing: false },
-    { time: '6:00 PM', event: 'Cake Cutting', description: 'Wedding cake ceremony', isEditing: false },
-    { time: '7:00 PM', event: 'Bouquet Toss', description: 'Traditional bouquet toss', isEditing: false },
-    { time: '8:00 PM', event: 'Garter Toss', description: 'Traditional garter toss', isEditing: false },
-    { time: '9:00 PM', event: 'Open Dancing', description: 'Party continues', isEditing: false },
-    { time: '11:00 PM', event: 'Grand Exit', description: 'Sparkler send-off', isEditing: false }
+    { time: '14:00', event: 'Ceremony', description: 'Wedding ceremony at the venue', isEditing: false },
+    { time: '15:00', event: 'Cocktail Hour', description: 'Drinks and appetizers', isEditing: false },
+    { time: '16:00', event: 'Reception', description: 'Dinner and dancing', isEditing: false },
+    { time: '17:00', event: 'First Dance', description: 'Couple\'s first dance', isEditing: false },
+    { time: '18:00', event: 'Cake Cutting', description: 'Wedding cake ceremony', isEditing: false },
+    { time: '19:00', event: 'Bouquet Toss', description: 'Traditional bouquet toss', isEditing: false },
+    { time: '20:00', event: 'Garter Toss', description: 'Traditional garter toss', isEditing: false },
+    { time: '21:00', event: 'Open Dancing', description: 'Party continues', isEditing: false },
+    { time: '23:00', event: 'Grand Exit', description: 'Sparkler send-off', isEditing: false }
   ];
 
   showCouplePhoto = false;
   showDatePicker = false;
   showLocationInput = false;
   
-  newItineraryItem: EventItinerary = { time: '', event: '', description: '', hour: 12, minute: 0, amPm: 'PM' };
+  newItineraryItem: EventItinerary = { time: '', event: '', description: '', hour: 14, minute: 0 };
 
   constructor(
     private authService: AuthService,
@@ -333,20 +333,7 @@ export class WeddingDetails implements OnInit {
 
   // Time picker methods
   getHours() {
-    return [
-      { value: 12, display: '12' },
-      { value: 1, display: '1' },
-      { value: 2, display: '2' },
-      { value: 3, display: '3' },
-      { value: 4, display: '4' },
-      { value: 5, display: '5' },
-      { value: 6, display: '6' },
-      { value: 7, display: '7' },
-      { value: 8, display: '8' },
-      { value: 9, display: '9' },
-      { value: 10, display: '10' },
-      { value: 11, display: '11' }
-    ];
+    return Array.from({ length: 24 }, (_, i) => i);
   }
 
   getMinutes() {
@@ -354,23 +341,15 @@ export class WeddingDetails implements OnInit {
   }
 
   getHourFromTime(timeStr: string): number {
-    if (!timeStr) return 12;
-    const [time, amPm] = timeStr.split(' ');
-    const [hour] = time.split(':');
+    if (!timeStr) return 14;
+    const [hour] = timeStr.split(':');
     return parseInt(hour);
   }
 
   getMinuteFromTime(timeStr: string): number {
     if (!timeStr) return 0;
-    const [time] = timeStr.split(' ');
-    const [, minute] = time.split(':');
+    const [, minute] = timeStr.split(':');
     return parseInt(minute);
-  }
-
-  getAmPmFromTime(timeStr: string): string {
-    if (!timeStr) return 'PM';
-    const parts = timeStr.split(' ');
-    return parts[parts.length - 1] || 'PM';
   }
 
   updateTimeHour(index: number, event: any) {
@@ -385,18 +364,11 @@ export class WeddingDetails implements OnInit {
     this.updateTimeString(index);
   }
 
-  updateTimeAmPm(index: number, event: any) {
-    const amPm = event.target.value;
-    this.eventItinerary[index].amPm = amPm;
-    this.updateTimeString(index);
-  }
-
   updateTimeString(index: number) {
     const item = this.eventItinerary[index];
-    const hour = item.hour || 12;
+    const hour = item.hour || 14;
     const minute = item.minute || 0;
-    const amPm = item.amPm || 'PM';
-    this.eventItinerary[index].time = `${hour}:${minute.toString().padStart(2, '0')} ${amPm}`;
+    this.eventItinerary[index].time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
     
     // Sort itinerary after time update
     this.sortItineraryByTime();
@@ -409,20 +381,10 @@ export class WeddingDetails implements OnInit {
   }
 
   compareTimes(timeA: string, timeB: string): number {
-    // Parse time strings like "2:30 PM" or "11:45 AM"
+    // Parse military time strings like "14:30" or "23:45"
     const parseTime = (timeStr: string) => {
-      const [time, period] = timeStr.split(' ');
-      const [hour, minute] = time.split(':').map(Number);
-      
-      // Convert to 24-hour format for comparison
-      let hour24 = hour;
-      if (period === 'AM' && hour === 12) {
-        hour24 = 0; // 12:XX AM becomes 00:XX
-      } else if (period === 'PM' && hour !== 12) {
-        hour24 = hour + 12; // 1:XX PM becomes 13:XX
-      }
-      
-      return hour24 * 60 + minute; // Convert to minutes since midnight
+      const [hour, minute] = timeStr.split(':').map(Number);
+      return hour * 60 + minute; // Convert to minutes since midnight
     };
 
     return parseTime(timeA) - parseTime(timeB);
@@ -431,10 +393,9 @@ export class WeddingDetails implements OnInit {
   addItineraryItem() {
     if (this.newItineraryItem.event && this.newItineraryItem.description) {
       // Create time string from individual components
-      const hour = this.newItineraryItem.hour || 12;
+      const hour = this.newItineraryItem.hour || 14;
       const minute = this.newItineraryItem.minute || 0;
-      const amPm = this.newItineraryItem.amPm || 'PM';
-      const timeString = `${hour}:${minute.toString().padStart(2, '0')} ${amPm}`;
+      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 
       const newItem: EventItinerary = { 
         time: timeString,
@@ -458,9 +419,8 @@ export class WeddingDetails implements OnInit {
             time: '', 
             event: '', 
             description: '', 
-            hour: 12, 
-            minute: 0, 
-            amPm: 'PM' 
+            hour: 14, 
+            minute: 0
           };
           
           console.log('New itinerary item added to backend');
