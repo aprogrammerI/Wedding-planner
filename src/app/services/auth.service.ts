@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
 import { delay, tap, catchError, map } from 'rxjs/operators';
 
@@ -84,7 +85,7 @@ export class AuthService {
   ];
 
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     // Check if user is already logged in
     this.checkAuthStatus();
   }
@@ -203,6 +204,9 @@ export class AuthService {
     localStorage.removeItem('temp_user_email');
     localStorage.removeItem('temp_user_role');
     this.currentUserSubject.next(null);
+    
+    // Redirect to home page after logout
+    this.router.navigate(['/home']);
   }
 
   isAuthenticated(): boolean {

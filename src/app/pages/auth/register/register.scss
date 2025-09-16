@@ -101,3 +101,108 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+// Validation Styles
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  
+  div {
+    margin-bottom: 0.125rem;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.form-control.is-invalid {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-control.is-valid {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+// Password Strength Indicator
+.password-strength {
+  .strength-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+  }
+  
+  .strength-bar {
+    height: 4px;
+    background-color: #e9ecef;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+    
+    .strength-fill {
+      height: 100%;
+      transition: all 0.3s ease;
+      border-radius: 2px;
+      
+      &.strength-weak {
+        background-color: #dc3545;
+      }
+      
+      &.strength-medium {
+        background-color: #ffc107;
+      }
+      
+      &.strength-good {
+        background-color: #17a2b8;
+      }
+      
+      &.strength-strong {
+        background-color: #28a745;
+      }
+    }
+  }
+  
+  .strength-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+    
+    &.strength-weak {
+      color: #dc3545;
+    }
+    
+    &.strength-medium {
+      color: #ffc107;
+    }
+    
+    &.strength-good {
+      color: #17a2b8;
+    }
+    
+    &.strength-strong {
+      color: #28a745;
+    }
+  }
+}
+
+// Form validation states
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  .role-selection .roles-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .password-strength {
+    .strength-label,
+    .strength-text {
+      font-size: 0.7rem;
+    }
+  }
+}

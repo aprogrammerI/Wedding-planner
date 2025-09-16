@@ -22,6 +22,7 @@ export class Navbar {
   
   logout() {
     this.authService.logout();
+    // AuthService will handle the redirect to home page
   }
 
   getRoleIcon(): string {

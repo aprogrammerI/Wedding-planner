@@ -17,9 +17,20 @@
           class="form-control"
           name="name"
           [(ngModel)]="user.name"
+          #nameInput="ngModel"
           required
+          minlength="2"
+          maxlength="50"
+          pattern="^[a-zA-Z\s]+$"
         />
+        <div *ngIf="nameInput.invalid && (nameInput.dirty || nameInput.touched)" class="invalid-feedback d-block">
+          <div *ngIf="nameInput.errors?.['required']">Name is required</div>
+          <div *ngIf="nameInput.errors?.['minlength']">Name must be at least 2 characters long</div>
+          <div *ngIf="nameInput.errors?.['maxlength']">Name cannot exceed 50 characters</div>
+          <div *ngIf="nameInput.errors?.['pattern']">Name can only contain letters and spaces</div>
+        </div>
       </div>
+      
       <div class="mb-3">
         <label for="email" class="form-label">Email address</label>
         <input
@@ -28,9 +39,17 @@
           class="form-control"
           name="email"
           [(ngModel)]="user.email"
+          #emailInput="ngModel"
           required
+          email
+          pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         />
+        <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="invalid-feedback d-block">
+          <div *ngIf="emailInput.errors?.['required']">Email is required</div>
+          <div *ngIf="emailInput.errors?.['email'] || emailInput.errors?.['pattern']">Please enter a valid email address</div>
+        </div>
       </div>
+      
       <div class="mb-3">
         <label for="password" class="form-label">Password</label>
         <input
@@ -39,13 +58,33 @@
           class="form-control"
           name="password"
           [(ngModel)]="user.password"
+          #passwordInput="ngModel"
           required
+          minlength="8"
+          maxlength="50"
+          pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
         />
+        <div *ngIf="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)" class="invalid-feedback d-block">
+          <div *ngIf="passwordInput.errors?.['required']">Password is required</div>
+          <div *ngIf="passwordInput.errors?.['minlength']">Password must be at least 8 characters long</div>
+          <div *ngIf="passwordInput.errors?.['maxlength']">Password cannot exceed 50 characters</div>
+          <div *ngIf="passwordInput.errors?.['pattern']">Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character</div>
+        </div>
+        
+        <!-- Password Strength Indicator -->
+        <div *ngIf="user.password && !passwordInput.errors?.['pattern']" class="password-strength mt-2">
+          <div class="strength-label">Password Strength:</div>
+          <div class="strength-bar">
+            <div class="strength-fill" [class]="getPasswordStrengthClass()" [style.width.%]="getPasswordStrength()"></div>
+          </div>
+          <div class="strength-text">{{ getPasswordStrengthText() }}</div>
+        </div>
       </div>
+      
       <button
         type="submit"
         class="btn btn-primary w-100"
-        [disabled]="registerForm.invalid || isRegistering"
+        [disabled]="registerForm.invalid || isRegistering || !isFormValid()"
       >
         <span *ngIf="isRegistering">Registering...</span>
         <span *ngIf="!isRegistering">Register</span>
