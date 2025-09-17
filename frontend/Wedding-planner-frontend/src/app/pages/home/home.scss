@@ -1,0 +1,99 @@
+// Additional home page styles can be added here
+.jumbotron {
+  background-image: url('/assets/cover-home.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  min-height: 70vh;
+  position: relative;
+  color: #ffffff;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Use dark overlay tinted with primary to match palette */
+    background: linear-gradient(
+      to bottom right,
+      rgba(53, 55, 46, 0.55),
+      rgba(161, 180, 154, 0.35)
+    );
+    z-index: 1;
+  }
+
+  .container {
+    position: relative;
+    z-index: 2;
+  }
+
+  .btn-primary {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+  .btn-primary:hover {
+    background-color: #f79a89;
+    border-color: #f79a89;
+  }
+
+  .btn-outline-light {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.8);
+  }
+  .btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+  }
+}
+
+/* Sections */
+section.bg-white {
+  background-color: #ffffff !important;
+}
+
+section.bg-light {
+  background-color: var(--color-bg) !important;
+}
+
+h2.text-primary,
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: 1px solid var(--bs-border-color);
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 24px rgba(53,55,46,0.08);
+  }
+
+  .card-title {
+    color: var(--color-dark);
+  }
+
+  .btn-outline-primary {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+  .btn-outline-primary:hover {
+    background-color: var(--color-primary);
+    color: #fff;
+  }
+}
+
+/* Feature icons recolor to primary/accent */
+.feature-icon-primary circle,
+.feature-icon-primary rect,
+.feature-icon-primary path {
+  fill: var(--color-primary) !important;
+  stroke: var(--color-primary) !important;
+}
+
+.feature-icon-accent circle,
+.feature-icon-accent rect,
+.feature-icon-accent path {
+  fill: var(--color-accent) !important;
+  stroke: var(--color-accent) !important;
+}
+

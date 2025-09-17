@@ -1,0 +1,113 @@
+.login-page {
+  min-height: 70vh;
+  background: #f4f4f4;
+}
+
+.card {
+  border: none;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+}
+
+.alert {
+  margin-bottom: 1rem;
+}
+
+/* Google Login Button */
+.google-btn {
+  border: 1px solid #ddd;
+  background: white;
+  color: #333;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.google-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Divider */
+.divider {
+  position: relative;
+  text-align: center;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #ddd;
+  }
+  
+  span {
+    background: white;
+    padding: 0 15px;
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+}
+
+/* Forgot Password Link */
+.forgot-password-link {
+  color: #6c757d;
+  font-size: 0.9rem;
+  
+  &:hover {
+    color: #007bff;
+  }
+}
+
+/* Forgot Password Form */
+.forgot-password-form {
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+/* Loading States */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Form Controls */
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Button States */
+.btn:disabled {
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .card {
+    margin: 1rem;
+  }
+  
+  .google-btn {
+    font-size: 0.9rem;
+  }
+}

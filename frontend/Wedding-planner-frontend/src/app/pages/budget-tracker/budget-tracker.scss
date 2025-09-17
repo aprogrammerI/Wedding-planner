@@ -1,0 +1,121 @@
+.pie {
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: conic-gradient(#e9ecef 0 100%);
+  box-shadow: 0 10px 24px rgba(53,55,46,0.08);
+}
+
+.legend {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* Budget Action Icons - Same style as Task Manager */
+.budget-actions {
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.list-group-item:hover .budget-actions {
+  opacity: 1;
+}
+
+.edit-icon, .delete-icon {
+  cursor: pointer;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  padding: 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-icon {
+  color: #e29578;
+}
+
+.edit-icon:hover {
+  background-color: rgba(226, 149, 120, 0.1);
+  transform: scale(1.1);
+}
+
+.delete-icon {
+  color: #dc3545;
+}
+
+.delete-icon:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+  transform: scale(1.1);
+}
+
+/* Button Styling with Project Colors - Same as Task Manager */
+.btn-primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: white !important;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(53, 55, 46, 0.15);
+}
+
+.btn-outline-secondary {
+  border-color: var(--color-muted) !important;
+  color: var(--color-dark) !important;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--color-muted) !important;
+  border-color: var(--color-muted) !important;
+  color: var(--color-dark) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(53, 55, 46, 0.15);
+}
+
+/* Form Controls Styling */
+.form-control:focus, .form-select:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(110, 127, 103, 0.25) !important;
+}
+
+.budget-breakdown-table th,
+.budget-breakdown-table td {
+  vertical-align: middle;
+  text-align: left;
+}
+.budget-breakdown-table th {
+  font-weight: 600;
+  color: var(--color-dark, #333);
+  background: #f8f9fa;
+}
+.budget-breakdown-table td {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.budget-breakdown-table input[type="number"] {
+  min-width: 70px;
+  max-width: 90px;
+  display: inline-block;
+  margin-right: 4px;
+}
+.budget-breakdown-table .badge {
+  font-size: 0.85em;
+  vertical-align: middle;
+}
+.budget-breakdown-table .legend {
+  vertical-align: middle;
+}
+

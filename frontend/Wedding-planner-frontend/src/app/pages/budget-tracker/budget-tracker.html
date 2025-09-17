@@ -1,0 +1,691 @@
+<!--1-->
+
+
+<!--&lt;!&ndash;&lt;!&ndash;&lt;!&ndash; User Budget Section &ndash;&gt;&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;<div class="card mb-4">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  <div class="card-body d-flex align-items-center gap-3 flex-wrap">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    <label class="form-label mb-0">Your Budget:</label>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;&lt;!&ndash;    <input type="number" [(ngModel)]="budget" (change)="saveBudget()" class="form-control w-auto" min="0" style="max-width: 180px;" placeholder="Enter your budget" />&ndash;&gt;&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;&lt;!&ndash;   <input type="number" [(ngModel)]="budget" (change)="updateBudgetInBackend()" (blur)="updateBudgetInBackend()" (keyup.enter)="updateBudgetInBackend()" class="form-control w-auto" min="0" style="max-width: 180px;" placeholder="Enter your budget" />&ndash;&gt;&ndash;&gt;&ndash;&gt;-->
+
+<!--&lt;!&ndash;&lt;!&ndash;    <input&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      type="number"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      [(ngModel)]="budget"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      (ngModelChange)="onBudgetChange($event)"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      class="form-control w-auto"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      min="0"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      style="max-width: 180px;"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      placeholder="Enter your budget"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    />&ndash;&gt;&ndash;&gt;-->
+
+<!--&lt;!&ndash;&lt;!&ndash;    <span class="ms-2 text-muted" *ngIf="budget > 0">({{ budget | currency }})</span>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    <span class="ms-4">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      <strong>Remaining:</strong>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      <span [ngClass]="{'text-danger fw-bold': remainingBudget < 0, 'text-success': remainingBudget >= 0}">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        {{ remainingBudget | currency }}&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      </span>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      <span *ngIf="remainingBudget < 0" class="badge bg-danger ms-2">Over!</span>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    </span>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;</div>&ndash;&gt;&ndash;&gt;-->
+
+<!--&lt;!&ndash;&lt;!&ndash;<div class="mb-3 row">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  <div class="col">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    <input [(ngModel)]="newName" class="form-control" placeholder="Item name" />&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  <div class="col">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    <input type="number" [(ngModel)]="newAmount" class="form-control" placeholder="Amount" />&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  <div class="col">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    <select [(ngModel)]="newCategory" class="form-select">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      <option value="">Select category</option>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      <option *ngFor="let c of categories" [value]="c">{{ c }}</option>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    </select>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  <div class="col-auto">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    <button (click)="add()" class="btn btn-primary">Add</button>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;</div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;<ul class="list-group mb-3">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  <li *ngFor="let e of expenses" class="list-group-item">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    <div class="d-flex justify-content-between align-items-center" *ngIf="editingId !== e.id; else editRow">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      <div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        <div class="fw-semibold">{{ e.name }}</div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        <div class="text-muted small" *ngIf="e.category">{{ e.category }}</div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      <div class="d-flex align-items-center gap-2">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        <strong>{{ e.amount | currency }}</strong>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        <div class="budget-actions">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          <mat-icon class="edit-icon"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                    (click)="startEdit(e)"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                    title="Edit Item">edit</mat-icon>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          <mat-icon class="delete-icon"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                    (click)="remove(e.id)"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                    title="Delete Item">delete</mat-icon>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    </div>&ndash;&gt;&ndash;&gt;-->
+
+<!--&lt;!&ndash;&lt;!&ndash;    <ng-template #editRow>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      <div class="row g-2 align-items-end">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        <div class="col-md-5">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          <label class="form-label">Name</label>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          <input [(ngModel)]="editDraft.name" class="form-control form-control-sm" />&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        <div class="col-md-3">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          <label class="form-label">Amount</label>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          <input type="number" [(ngModel)]="editDraft.amount" class="form-control form-control-sm" />&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        <div class="col-md-2">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          <label class="form-label">Category</label>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          <select [(ngModel)]="editDraft.category" class="form-select form-select-sm">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            <option value="">Select category</option>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          </select>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        <div class="col-md-2 d-flex gap-2">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          <button (click)="saveEdit()" class="btn btn-sm btn-primary">Save</button>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          <button (click)="cancelEdit()" class="btn btn-sm btn-outline-secondary">Cancel</button>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    </ng-template>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  </li>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;</ul>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;<div class="row mt-4">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  <div class="col-md-5">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    <div class="pie mb-3" [ngStyle]="{ 'background-image': pieGradient }"></div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    <ul class="list-unstyled small mb-0 ps-2">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      <li *ngFor="let s of categorySlices" class="d-flex align-items-center mb-1">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        <span class="legend me-2" [ngStyle]="{ 'background-color': s.color }"></span>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        <span>{{ s.category }}</span>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      </li>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    </ul>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  <div class="col-md-7">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    <h6 class="mb-3">Breakdown</h6>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    <div class="table-responsive">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      <table class="table table-sm align-middle mb-0 budget-breakdown-table">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        <thead>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          <tr>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            <th>Category</th>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            <th>Spent</th>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            <th>Limit</th>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            <th>Status</th>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          </tr>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        </thead>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        <tbody>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          <tr *ngFor="let s of categorySlices">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            <td>{{ s.category }}</td>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            <td>{{ s.amount | currency }} <span class="text-muted">({{ s.percent | number:'1.0-0' }}%)</span></td>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            <td style="min-width:120px;">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;              <input type="number" min="0" class="form-control form-control-sm d-inline w-auto" style="max-width: 90px;" [(ngModel)]="categoryLimits[s.category]" (change)="setCategoryLimit(s.category, categoryLimits[s.category])" placeholder="Limit" title="Set limit for {{s.category}}" />&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            </td>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            <td>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;              <span *ngIf="isCategoryOverLimit(s.category, s.amount)" class="badge bg-danger">Over!</span>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;              <span *ngIf="!isCategoryOverLimit(s.category, s.amount) && getCategoryLimit(s.category) > 0" class="badge bg-success">OK</span>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            </td>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;          </tr>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;        </tbody>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;      </table>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;    </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  </div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;</div>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;<div class="text-end mt-3">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  Total: <strong>{{ total() | currency }}</strong>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;  <span *ngIf="overBudget" class="badge bg-danger ms-2">Over Budget!</span>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;</div>&ndash;&gt;&ndash;&gt;-->
+
+
+
+
+<!--2-->
+
+
+ User Budget Section
+<div class="card mb-4">
+  <div class="card-body d-flex align-items-center gap-3 flex-wrap">
+    <label class="form-label mb-0">Your Budget:</label>
+
+    <input
+      type="number"
+      [(ngModel)]="budget"
+      (ngModelChange)="onBudgetChange($event)"
+      class="form-control w-auto"
+      min="0"
+      style="max-width: 180px;"
+      placeholder="Enter your budget"
+    />
+
+    <span class="ms-2 text-muted" *ngIf="budget > 0">({{ budget | currency }})</span>
+    <span class="ms-4">
+      <strong>Remaining:</strong>
+      <span [ngClass]="{'text-danger fw-bold': remainingBudget < 0, 'text-success': remainingBudget >= 0}">
+        {{ remainingBudget | currency }}
+      </span>
+      <span *ngIf="remainingBudget < 0" class="badge bg-danger ms-2">Over!</span>
+    </span>
+  </div>
+</div>
+
+<div class="mb-3 row">
+  <div class="col">
+    <input [(ngModel)]="newName" class="form-control" placeholder="Item name" />
+  </div>
+  <div class="col">
+    <input type="number" [(ngModel)]="newAmount" class="form-control" placeholder="Amount" />
+  </div>
+  <div class="col">
+    <select [(ngModel)]="newCategory" class="form-select">
+      <option value="">Select category</option>
+      <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+    </select>
+  </div>
+  <div class="col-auto">
+    <button (click)="add()" class="btn btn-primary">Add</button>
+  </div>
+</div>
+
+<ul class="list-group mb-3">
+  <li *ngFor="let e of expenses" class="list-group-item">
+    <div class="d-flex justify-content-between align-items-center" *ngIf="editingId !== e.id; else editRow">
+      <div>
+        <div class="fw-semibold">{{ e.name }}</div>
+        <div class="text-muted small" *ngIf="e.category">{{ e.category }}</div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <strong>{{ e.amount | currency }}</strong>
+        <div class="budget-actions">
+          <mat-icon class="edit-icon" (click)="startEdit(e)" title="Edit Item">edit</mat-icon>
+          <mat-icon class="delete-icon" (click)="remove(e.id)" title="Delete Item">delete</mat-icon>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #editRow>
+      <div class="row g-2 align-items-end">
+        <div class="col-md-5">
+          <label class="form-label">Name</label>
+          <input [(ngModel)]="editDraft.name" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Amount</label>
+          <input type="number" [(ngModel)]="editDraft.amount" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Category</label>
+          <select [(ngModel)]="editDraft.category" class="form-select form-select-sm">
+            <option value="">Select category</option>
+            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+          <button (click)="saveEdit()" class="btn btn-sm btn-primary">Save</button>
+          <button (click)="cancelEdit()" class="btn btn-sm btn-outline-secondary">Cancel</button>
+        </div>
+      </div>
+    </ng-template>
+  </li>
+</ul>
+
+<div class="row mt-4">
+  <div class="col-md-5">
+    <div class="pie mb-3" [ngStyle]="{ 'background-image': pieGradient }"></div>
+    <ul class="list-unstyled small mb-0 ps-2">
+      <li *ngFor="let s of categorySlices" class="d-flex align-items-center mb-1">
+        <span class="legend me-2" [ngStyle]="{ 'background-color': s.color }"></span>
+        <span>{{ s.category }}</span>
+      </li>
+    </ul>
+  </div>
+  <div class="col-md-7">
+    <h6 class="mb-3">Breakdown</h6>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0 budget-breakdown-table">
+        <thead>
+        <tr>
+          <th>Category</th>
+          <th>Spent</th>
+          <th>Limit</th>
+          <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let s of categorySlices">
+          <td>{{ s.category }}</td>
+          <td>{{ s.amount | currency }} <span class="text-muted">({{ s.percent | number:'1.0-0' }}%)</span></td>
+          <td style="min-width:120px;">
+<!--            <input type="number" min="0" class="form-control form-control-sm d-inline w-auto" style="max-width: 90px;"-->
+<!--                   [(ngModel)]="categoryLimits[s.category]"-->
+<!--                   (change)="setCategoryLimit(s.category, categoryLimits[s.category])"-->
+<!--                   placeholder="Limit" title="Set limit for {{s.category}}" />-->
+
+<!--            <input-->
+<!--              type="number"-->
+<!--              min="0"-->
+<!--              class="form-control form-control-sm d-inline w-auto"-->
+<!--              style="max-width: 90px;"-->
+<!--              [(ngModel)]="categoryLimits[s.category]"-->
+<!--              [ngModelOptions]="{ updateOn: 'blur' }"-->
+<!--              (change)="setCategoryLimit(s.category, categoryLimits[s.category])"-->
+<!--              placeholder="Limit"-->
+<!--              title="Set limit for {{s.category}}"-->
+<!--            />-->
+
+<!--            <input type="number" min="0" class="form-control form-control-sm d-inline w-auto" style="max-width: 90px;"-->
+<!--                   [(ngModel)]="categoryLimits[s.category]"-->
+<!--                   [ngModelOptions]="{ updateOn: 'blur' }"-->
+<!--                   (change)="setCategoryLimit(s.category, categoryLimits[s.category])"-->
+<!--                   placeholder="Limit" title="Set limit for {{s.category}}" />-->
+
+
+            <input type="number" min="0" class="form-control form-control-sm d-inline w-auto" style="max-width: 90px;"
+                   [(ngModel)]="categoryLimits[mapStringToCategoryType(s.category)]"
+                   [ngModelOptions]="{ updateOn: 'blur' }"
+                   (change)="setCategoryLimit(s.category, categoryLimits[mapStringToCategoryType(s.category)])"
+                   placeholder="Limit" title="Set limit for {{s.category}}" />
+
+
+          </td>
+          <td>
+            <span *ngIf="isCategoryOverLimit(s.category, s.amount)" class="badge bg-danger">Over!</span>
+            <span *ngIf="!isCategoryOverLimit(s.category, s.amount) && getCategoryLimit(s.category) > 0" class="badge bg-success">OK</span>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="text-end mt-3">
+  Total: <strong>{{ total() | currency }}</strong>
+  <span *ngIf="overBudget" class="badge bg-danger ms-2">Over Budget!</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+<!--3-->
+
+
+
+
+<!--&lt;!&ndash; frontend/Wedding-planner-frontend/src/app/pages/budget-tracker/budget-tracker.html &ndash;&gt;-->
+<!--<div class="container py-4">-->
+<!--  <h2>Budget</h2>-->
+
+<!--  &lt;!&ndash; Total budget &ndash;&gt;-->
+<!--  <div class="mb-3 d-flex align-items-center gap-2">-->
+<!--    <label class="form-label mb-0">Total budget</label>-->
+<!--    <input-->
+<!--      type="number"-->
+<!--      class="form-control w-auto"-->
+<!--      min="0"-->
+<!--      style="max-width: 180px;"-->
+<!--      [(ngModel)]="budget"-->
+<!--      (blur)="updateBudgetInBackend()"-->
+<!--      (keyup.enter)="updateBudgetInBackend()"-->
+<!--    />-->
+<!--  </div>-->
+
+<!--  <div class="row">-->
+<!--    <div class="col-md-6">-->
+<!--      <h5>Summary</h5>-->
+<!--      <ul class="list-group mb-3">-->
+<!--        <li class="list-group-item d-flex justify-content-between">-->
+<!--          <span>Total</span><strong>{{ budget | number:'1.0-0' }}</strong>-->
+<!--        </li>-->
+<!--        <li class="list-group-item d-flex justify-content-between">-->
+<!--          <span>Spent</span><strong>{{ totalSpent | number:'1.0-0' }}</strong>-->
+<!--        </li>-->
+<!--        <li class="list-group-item d-flex justify-content-between">-->
+<!--          <span>Remaining</span><strong>{{ remaining | number:'1.0-0' }}</strong>-->
+<!--        </li>-->
+<!--      </ul>-->
+
+<!--      <h5>Categories (limits)</h5>-->
+<!--      <div class="table-responsive">-->
+<!--        <table class="table table-sm align-middle">-->
+<!--          <thead>-->
+<!--          <tr>-->
+<!--            <th>Category</th>-->
+<!--            <th class="text-end">Spent</th>-->
+<!--            <th class="text-end">Limit</th>-->
+<!--            <th class="text-end">Status</th>-->
+<!--          </tr>-->
+<!--          </thead>-->
+<!--          <tbody>-->
+<!--          <tr *ngFor="let c of categoryData">-->
+<!--            <td>{{ c.categoryType | titlecase | replace:'_':' ' }}</td>-->
+<!--            <td class="text-end">{{ c.spent | number:'1.0-0' }}</td>-->
+<!--            <td>-->
+<!--              <input-->
+<!--                type="number"-->
+<!--                class="form-control form-control-sm text-end"-->
+<!--                min="0"-->
+<!--                step="1"-->
+<!--                [ngModel]="categoryLimits[c.categoryType]"-->
+<!--                [ngModelOptions]="{ updateOn: 'blur' }"-->
+<!--                (ngModelChange)="onCategoryLimitInput(c.categoryType, $event)"-->
+<!--              />-->
+<!--            </td>-->
+<!--            <td class="text-end">{{ c.status }}</td>-->
+<!--          </tr>-->
+<!--          </tbody>-->
+<!--        </table>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    <div class="col-md-6">-->
+<!--      <h5>Items</h5>-->
+
+<!--      &lt;!&ndash; Add item &ndash;&gt;-->
+<!--      <div class="d-flex gap-2 mb-3">-->
+<!--        <input class="form-control" placeholder="Item name" [(ngModel)]="newName" />-->
+<!--        <input class="form-control" type="number" min="0" placeholder="Amount" [(ngModel)]="newAmount" />-->
+<!--        <select class="form-select" [(ngModel)]="newCategory">-->
+<!--          <option value="" disabled selected>Category</option>-->
+<!--          <option>Event Planning</option>-->
+<!--          <option>Photography</option>-->
+<!--          <option>Catering</option>-->
+<!--          <option>Flowers</option>-->
+<!--          <option>Music</option>-->
+<!--          <option>Venues</option>-->
+<!--        </select>-->
+<!--        <button class="btn btn-primary" (click)="addExpense()">Add</button>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; List items &ndash;&gt;-->
+<!--      <div class="table-responsive">-->
+<!--        <table class="table table-sm align-middle">-->
+<!--          <thead>-->
+<!--          <tr>-->
+<!--            <th>Name</th>-->
+<!--            <th class="text-end">Amount</th>-->
+<!--            <th>Category</th>-->
+<!--            <th class="text-end">Actions</th>-->
+<!--          </tr>-->
+<!--          </thead>-->
+<!--          <tbody>-->
+<!--          <tr *ngFor="let e of expenses">-->
+<!--            <td>{{ e.name }}</td>-->
+<!--            <td class="text-end">{{ e.amount | number:'1.0-0' }}</td>-->
+<!--            <td>{{ e.category }}</td>-->
+<!--            <td class="text-end">-->
+<!--              <button class="btn btn-sm btn-outline-danger" (click)="deleteExpense(e.id)">Delete</button>-->
+<!--            </td>-->
+<!--          </tr>-->
+<!--          <tr *ngIf="!expenses.length">-->
+<!--            <td colspan="4" class="text-center text-muted">No items yet</td>-->
+<!--          </tr>-->
+<!--          </tbody>-->
+<!--        </table>-->
+<!--      </div>-->
+
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+
+
+
+
+
+
+
+<!--4-->
+
+
+
+
+
+<!--&lt;!&ndash; frontend/Wedding-planner-frontend/src/app/pages/budget-tracker/budget-tracker.html &ndash;&gt;-->
+<!--<div class="container py-4">-->
+<!--  <h2>Budget</h2>-->
+
+<!--  <div class="mb-3 d-flex align-items-center gap-2">-->
+<!--    <label class="form-label mb-0">Total budget</label>-->
+<!--    <input-->
+<!--      type="number"-->
+<!--      class="form-control w-auto"-->
+<!--      min="0"-->
+<!--      style="max-width: 180px;"-->
+<!--      [(ngModel)]="budget"-->
+<!--      (blur)="updateBudgetInBackend()"-->
+<!--      (keyup.enter)="updateBudgetInBackend()"-->
+<!--    />-->
+<!--  </div>-->
+
+<!--  <div class="row">-->
+<!--    <div class="col-md-6">-->
+<!--      <h5>Summary</h5>-->
+<!--      <ul class="list-group mb-3">-->
+<!--        <li class="list-group-item d-flex justify-content-between">-->
+<!--          <span>Total</span><strong>{{ budget | number:'1.0-0' }}</strong>-->
+<!--        </li>-->
+<!--        <li class="list-group-item d-flex justify-content-between">-->
+<!--          <span>Spent</span><strong>{{ totalSpent | number:'1.0-0' }}</strong>-->
+<!--        </li>-->
+<!--        <li class="list-group-item d-flex justify-content-between">-->
+<!--          <span>Remaining</span><strong>{{ remaining | number:'1.0-0' }}</strong>-->
+<!--        </li>-->
+<!--      </ul>-->
+
+<!--      <h5>Categories (limits)</h5>-->
+<!--      <div class="table-responsive">-->
+<!--        <table class="table table-sm align-middle">-->
+<!--          <thead>-->
+<!--          <tr>-->
+<!--            <th>Category</th>-->
+<!--            <th class="text-end">Spent</th>-->
+<!--            <th class="text-end">Limit</th>-->
+<!--            <th class="text-end">Status</th>-->
+<!--          </tr>-->
+<!--          </thead>-->
+<!--          <tbody>-->
+<!--          <tr *ngFor="let c of categoryData">-->
+<!--            <td>{{ c.categoryType | replace:'_':' ' | titlecase }}</td>-->
+<!--            <td class="text-end">{{ c.spent | number:'1.0-0' }}</td>-->
+<!--            <td>-->
+<!--              <input-->
+<!--                type="number"-->
+<!--                class="form-control form-control-sm text-end"-->
+<!--                min="0"-->
+<!--                step="1"-->
+<!--                [ngModel]="categoryLimits[c.categoryType]"-->
+<!--                [ngModelOptions]="{ updateOn: 'blur' }"-->
+<!--                (ngModelChange)="onCategoryLimitInput(c.categoryType, $event)"-->
+<!--              />-->
+<!--            </td>-->
+<!--            <td class="text-end">{{ c.status }}</td>-->
+<!--          </tr>-->
+<!--          </tbody>-->
+<!--        </table>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    <div class="col-md-6">-->
+<!--      <h5>Items</h5>-->
+
+<!--      <div class="d-flex gap-2 mb-3">-->
+<!--        <input class="form-control" placeholder="Item name" [(ngModel)]="newName" />-->
+<!--        <input class="form-control" type="number" min="0" placeholder="Amount" [(ngModel)]="newAmount" />-->
+<!--        <select class="form-select" [(ngModel)]="newCategory">-->
+<!--          <option value="" disabled selected>Category</option>-->
+<!--          <option>Event Planning</option>-->
+<!--          <option>Photography</option>-->
+<!--          <option>Catering</option>-->
+<!--          <option>Flowers</option>-->
+<!--          <option>Music</option>-->
+<!--          <option>Venues</option>-->
+<!--        </select>-->
+<!--        <button class="btn btn-primary" (click)="addExpense()">Add</button>-->
+<!--      </div>-->
+
+<!--      <div class="table-responsive">-->
+<!--        <table class="table table-sm align-middle">-->
+<!--          <thead>-->
+<!--          <tr>-->
+<!--            <th>Name</th>-->
+<!--            <th class="text-end">Amount</th>-->
+<!--            <th>Category</th>-->
+<!--            <th class="text-end">Actions</th>-->
+<!--          </tr>-->
+<!--          </thead>-->
+<!--          <tbody>-->
+<!--          <tr *ngFor="let e of expenses">-->
+<!--            <td>{{ e.name }}</td>-->
+<!--            <td class="text-end">{{ e.amount | number:'1.0-0' }}</td>-->
+<!--            <td>{{ e.category }}</td>-->
+<!--            <td class="text-end">-->
+<!--              <button class="btn btn-sm btn-outline-danger" (click)="deleteExpense(e.id)">Delete</button>-->
+<!--            </td>-->
+<!--          </tr>-->
+<!--          <tr *ngIf="!expenses.length">-->
+<!--            <td colspan="4" class="text-center text-muted">No items yet</td>-->
+<!--          </tr>-->
+<!--          </tbody>-->
+<!--        </table>-->
+<!--      </div>-->
+
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+
+
+
+
+
+<!--5-->
+
+
+
+
+<!-- frontend/Wedding-planner-frontend/src/app/pages/budget-tracker/budget-tracker.html -->
+<!-- User Budget Section -->
+<!--<div class="card mb-4">-->
+<!--  <div class="card-body d-flex align-items-center gap-3 flex-wrap">-->
+<!--    <label class="form-label mb-0">Your Budget:</label>-->
+<!--    <input type="number" [(ngModel)]="budget" (change)="saveBudget()" class="form-control w-auto" min="0" style="max-width: 180px;" placeholder="Enter your budget" />-->
+<!--    <span class="ms-2 text-muted" *ngIf="budget > 0">({{ budget | currency }})</span>-->
+<!--    <span class="ms-4">-->
+<!--      <strong>Remaining:</strong>-->
+<!--      <span [ngClass]="{'text-danger fw-bold': remainingBudget < 0, 'text-success': remainingBudget >= 0}">-->
+<!--        {{ remainingBudget | currency }}-->
+<!--      </span>-->
+<!--      <span *ngIf="remainingBudget < 0" class="badge bg-danger ms-2">Over!</span>-->
+<!--    </span>-->
+<!--  </div>-->
+
+<!--</div>-->
+
+<!--<div class="mb-3 row">-->
+<!--  <div class="col">-->
+<!--    <input [(ngModel)]="newName" class="form-control" placeholder="Item name" />-->
+<!--  </div>-->
+<!--  <div class="col">-->
+<!--    <input type="number" [(ngModel)]="newAmount" class="form-control" placeholder="Amount" />-->
+<!--  </div>-->
+<!--  <div class="col">-->
+<!--    <select [(ngModel)]="newCategory" class="form-select">-->
+<!--      <option value="">Select category</option>-->
+<!--      <option *ngFor="let c of categories" [value]="c">{{ c }}</option>-->
+<!--    </select>-->
+<!--  </div>-->
+<!--  <div class="col-auto">-->
+<!--    <button (click)="add()" class="btn btn-primary">Add</button>-->
+<!--  </div>-->
+<!--</div>-->
+<!--<ul class="list-group mb-3">-->
+<!--  <li *ngFor="let e of expenses" class="list-group-item">-->
+<!--    <div class="d-flex justify-content-between align-items-center" *ngIf="editingId !== e.id; else editRow">-->
+<!--      <div>-->
+<!--        <div class="fw-semibold">{{ e.name }}</div>-->
+<!--        <div class="text-muted small" *ngIf="e.category">{{ e.category }}</div>-->
+<!--      </div>-->
+<!--      <div class="d-flex align-items-center gap-2">-->
+<!--        <strong>{{ e.amount | currency }}</strong>-->
+<!--        <div class="budget-actions">-->
+<!--          <mat-icon class="edit-icon"-->
+<!--                    (click)="startEdit(e)"-->
+<!--                    title="Edit Item">edit</mat-icon>-->
+<!--          <mat-icon class="delete-icon"-->
+<!--                    (click)="remove(e.id)"-->
+<!--                    title="Delete Item">delete</mat-icon>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    <ng-template #editRow>-->
+<!--      <div class="row g-2 align-items-end">-->
+<!--        <div class="col-md-5">-->
+<!--          <label class="form-label">Name</label>-->
+<!--          <input [(ngModel)]="editDraft.name" class="form-control form-control-sm" />-->
+<!--        </div>-->
+<!--        <div class="col-md-3">-->
+<!--          <label class="form-label">Amount</label>-->
+<!--          <input type="number" [(ngModel)]="editDraft.amount" class="form-control form-control-sm" />-->
+<!--        </div>-->
+<!--        <div class="col-md-2">-->
+<!--          <label class="form-label">Category</label>-->
+<!--          <select [(ngModel)]="editDraft.category" class="form-select form-select-sm">-->
+<!--            <option value="">Select category</option>-->
+<!--            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>-->
+<!--          </select>-->
+<!--        </div>-->
+<!--        <div class="col-md-2 d-flex gap-2">-->
+<!--          <button (click)="saveEdit()" class="btn btn-sm btn-primary">Save</button>-->
+<!--          <button (click)="cancelEdit()" class="btn btn-sm btn-outline-secondary">Cancel</button>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </ng-template>-->
+<!--  </li>-->
+<!--</ul>-->
+<!--<div class="row mt-4">-->
+<!--  <div class="col-md-5">-->
+<!--    <div class="pie mb-3" [ngStyle]="{ 'background-image': pieGradient }"></div>-->
+<!--    <ul class="list-unstyled small mb-0 ps-2">-->
+<!--      <li *ngFor="let s of categorySlices" class="d-flex align-items-center mb-1">-->
+<!--        <span class="legend me-2" [ngStyle]="{ 'background-color': s.color }"></span>-->
+<!--        <span>{{ s.category }}</span>-->
+<!--      </li>-->
+<!--    </ul>-->
+<!--  </div>-->
+<!--  <div class="col-md-7">-->
+<!--    <h6 class="mb-3">Breakdown</h6>-->
+<!--    <div class="table-responsive">-->
+<!--      <table class="table table-sm align-middle mb-0 budget-breakdown-table">-->
+<!--        <thead>-->
+<!--        <tr>-->
+<!--          <th>Category</th>-->
+<!--          <th>Spent</th>-->
+<!--          <th>Limit</th>-->
+<!--          <th>Status</th>-->
+<!--        </tr>-->
+<!--        </thead>-->
+<!--        <tbody>-->
+<!--        <tr *ngFor="let s of categorySlices">-->
+<!--          <td>{{ s.category }}</td>-->
+<!--          <td>{{ s.amount | currency }} <span class="text-muted">({{ s.percent | number:'1.0-0' }}%)</span></td>-->
+<!--          <td style="min-width:120px;">-->
+<!--            <input type="number" min="0" class="form-control form-control-sm d-inline w-auto" style="max-width: 90px;" [(ngModel)]="categoryLimits[s.category]" (change)="setCategoryLimit(s.category, categoryLimits[s.category])" placeholder="Limit" title="Set limit for {{s.category}}" />-->
+<!--          </td>-->
+<!--          <td>-->
+<!--            <span *ngIf="isCategoryOverLimit(s.category, s.amount)" class="badge bg-danger">Over!</span>-->
+<!--            <span *ngIf="!isCategoryOverLimit(s.category, s.amount) && getCategoryLimit(s.category) > 0" class="badge bg-success">OK</span>-->
+<!--          </td>-->
+<!--        </tr>-->
+<!--        </tbody>-->
+<!--      </table>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+<!--<div class="text-end mt-3">-->
+<!--  Total: <strong>{{ total() | currency }}</strong>-->
+<!--  <span *ngIf="overBudget" class="badge bg-danger ms-2">Over Budget!</span>-->
+<!--</div>-->

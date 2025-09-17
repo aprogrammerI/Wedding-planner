@@ -1,0 +1,133 @@
+<div class="register-page d-flex align-items-center justify-content-center">
+  <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%;">
+    <h2 class="card-title text-center mb-4">Sign Up</h2>
+
+    <!-- Error message -->
+    <div *ngIf="error" class="alert alert-danger">
+      {{ error }}
+    </div>
+
+    <!-- Registration Form -->
+    <form *ngIf="!showRoleSelection" (ngSubmit)="register()" #registerForm="ngForm" novalidate>
+      <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input
+          type="text"
+          id="name"
+          class="form-control"
+          name="name"
+          [(ngModel)]="user.name"
+          #nameInput="ngModel"
+          required
+          minlength="2"
+          maxlength="50"
+          pattern="^[a-zA-Z\s]+$"
+        />
+        <div *ngIf="nameInput.invalid && (nameInput.dirty || nameInput.touched)" class="invalid-feedback d-block">
+          <div *ngIf="nameInput.errors?.['required']">Name is required</div>
+          <div *ngIf="nameInput.errors?.['minlength']">Name must be at least 2 characters long</div>
+          <div *ngIf="nameInput.errors?.['maxlength']">Name cannot exceed 50 characters</div>
+          <div *ngIf="nameInput.errors?.['pattern']">Name can only contain letters and spaces</div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email address</label>
+        <input
+          type="email"
+          id="email"
+          class="form-control"
+          name="email"
+          [(ngModel)]="user.email"
+          #emailInput="ngModel"
+          required
+          email
+          pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        />
+        <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="invalid-feedback d-block">
+          <div *ngIf="emailInput.errors?.['required']">Email is required</div>
+          <div *ngIf="emailInput.errors?.['email'] || emailInput.errors?.['pattern']">Please enter a valid email address</div>
+        </div>
+      </div>
+
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          id="password"
+          class="form-control"
+          name="password"
+          [(ngModel)]="user.password"
+          #passwordInput="ngModel"
+          required
+          minlength="8"
+          maxlength="50"
+
+          pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,50}$"
+        />
+
+<!--        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"-->
+
+
+        <div *ngIf="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)" class="invalid-feedback d-block">
+          <div *ngIf="passwordInput.errors?.['required']">Password is required</div>
+          <div *ngIf="passwordInput.errors?.['minlength']">Password must be at least 8 characters long</div>
+          <div *ngIf="passwordInput.errors?.['maxlength']">Password cannot exceed 50 characters</div>
+          <div *ngIf="passwordInput.errors?.['pattern']">Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character</div>
+        </div>
+
+        <!-- Password Strength Indicator -->
+        <div *ngIf="user.password && !passwordInput.errors?.['pattern']" class="password-strength mt-2">
+          <div class="strength-label">Password Strength:</div>
+          <div class="strength-bar">
+            <div class="strength-fill" [class]="getPasswordStrengthClass()" [style.width.%]="getPasswordStrength()"></div>
+          </div>
+          <div class="strength-text">{{ getPasswordStrengthText() }}</div>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary w-100"
+      [disabled]="registerForm.invalid || isRegistering || !isFormValid()"
+      >
+        <span *ngIf="isRegistering">Registering...</span>
+        <span *ngIf="!isRegistering">Register</span>
+      </button>
+    </form>
+
+    <!--        [disabled]="registerForm.invalid || isRegistering"-->
+
+    <!-- Role Selection -->
+    <div *ngIf="showRoleSelection" class="role-selection">
+      <h3 class="text-center mb-4">Choose Your Role</h3>
+      <p class="text-center text-muted mb-4">Select the role that best describes you in this wedding</p>
+
+      <div class="roles-grid">
+        <div
+          *ngFor="let role of availableRoles"
+          class="role-card"
+          [class.selected]="selectedRole === role.role"
+          [class.disabled]="isRoleSelecting"
+          (click)="!isRoleSelecting && selectRole(role.role)"
+        >
+          <div class="role-icon">
+            <img [src]="getRoleIcon(role)" [alt]="role.displayName" />
+          </div>
+          <h4 class="role-title">{{ role.displayName }}</h4>
+          <p class="role-description">{{ role.description }}</p>
+
+          <div *ngIf="isRoleSelecting && selectedRole === role.role" class="loading-spinner">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Link -->
+    <p class="text-center mt-3 mb-0">
+      Already have an account?
+      <a routerLink="/login">Sign in here</a>
+    </p>
+  </div>
+</div>

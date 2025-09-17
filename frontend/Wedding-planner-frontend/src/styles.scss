@@ -1,0 +1,89 @@
+
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$rose-palette,
+      tertiary: mat.$red-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+}
+/* Global theme palette */
+:root {
+  /* Custom palette */
+  --color-bg: #F0F8F8;   /* Mint tint */
+  --color-muted: #D3D8D5; /* Soft grey-green */
+  --color-accent: #FDAFA0; /* Peach accent */
+  --color-primary: #6e7f67; /* Sage primary */
+  --color-dark: #35372E;   /* Charcoal */
+
+  /* Bootstrap CSS variables override */
+  --bs-body-bg: var(--color-bg);
+  --bs-body-color: var(--color-dark);
+
+  --bs-primary: var(--color-primary);
+  --bs-primary-rgb: 161, 180, 154;
+
+  --bs-secondary: var(--color-muted);
+  --bs-secondary-rgb: 211, 216, 213;
+
+  --bs-light: #F0F8F8;
+  --bs-light-rgb: 240, 248, 248;
+
+  --bs-dark: #35372E;
+  --bs-dark-rgb: 53, 55, 46;
+
+  --bs-border-color: var(--color-muted);
+  --bs-link-color: var(--color-primary);
+  --bs-link-hover-color: #8fa287; /* slightly darker than primary */
+}
+
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+/* Generic navbar baseline (component can extend) */
+.navbar {
+  background: #ffffff;
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  box-shadow: 0 2px 4px rgba(53,55,46,0.06);
+  a {
+    text-decoration: none;
+    color: var(--color-dark);
+  }
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

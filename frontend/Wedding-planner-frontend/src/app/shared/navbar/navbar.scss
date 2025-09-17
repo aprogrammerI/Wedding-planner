@@ -1,0 +1,108 @@
+// Custom styles for navbar (minimal since we're using Bootstrap)
+/* Navbar themed with custom palette */
+.navbar-brand {
+  font-weight: 700;
+  color: var(--color-dark) !important;
+}
+
+.navbar {
+  border-bottom: 1px solid var(--bs-border-color);
+  background-color: #ffffff !important;
+}
+
+.btn-outline-secondary {
+  color: var(--color-dark);
+  border-color: var(--bs-border-color);
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--color-muted);
+  color: var(--color-dark);
+}
+
+.btn-outline-primary {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+.btn-primary {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.btn-primary:hover {
+  background-color: #f79a89;
+  border-color: #f79a89;
+}
+
+.nav-link.active {
+  font-weight: 600;
+  color: var(--color-primary) !important;
+}
+
+.nav-link:hover {
+  color: var(--color-primary) !important;
+}
+
+/* Role icon styling */
+.user-role-btn {
+  padding: 0.375rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+}
+
+.user-role-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #f8f9fa;
+  padding: 4px;
+  transition: all 0.3s ease;
+}
+
+.user-role-btn:hover .user-role-icon {
+  transform: scale(1.1);
+  background: #e9ecef;
+}
+
+/* Role selection prompt */
+.text-muted {
+  color: #6c757d !important;
+  font-size: 0.9rem;
+}
+
+.navbar-logo-img {
+  height: 110px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  margin-right: 18px;
+  /* The parent a.navbar-brand should have max-height and overflow:hidden */
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+app-sidebar {
+  flex: 0 0 220px;
+  min-width: 220px;
+  max-width: 220px;
+  height: 100vh;
+  z-index: 2;
+}
+.main-content {
+  flex: 1 1 auto;
+  padding: 2rem 2.5rem 2rem 2.5rem;
+  background: #f8f9fa;
+  min-height: 100vh;
+}

@@ -1,0 +1,211 @@
+<div class="d-flex justify-content-center gap-3 mb-4">
+  <button class="btn btn-primary" [class.active]="viewMode === 'add'" (click)="viewMode = 'add'">Add your guest</button>
+  <button class="btn btn-outline-secondary" [class.active]="viewMode === 'details'" (click)="viewMode = 'details'">Full Details</button>
+</div>
+
+<div *ngIf="viewMode === 'add'">
+  <div class="row guest-list-row">
+    <!-- Bride's Guests -->
+    <div class="col-md-6 d-flex flex-column align-items-center justify-content-center guest-col">
+      <img src="assets/bride-shoe.png" alt="Bride Shoe" class="guest-shoe mb-3" />
+      <h2 class="mb-3 text-center">Bride's guests</h2>
+      <div class="mb-3 w-100 d-flex justify-content-center">
+        <input [(ngModel)]="newBrideName" class="form-control w-auto" placeholder="Add new guest" />
+        <select [(ngModel)]="newBrideRole" class="form-select w-auto ms-2">
+          <option value="bridesmaid">Bridesmaid</option>
+          <option value="best man">Best Man</option>
+          <option value="parent">Parent</option>
+          <option value="relative">Relative</option>
+          <option value="friend">Friend</option>
+          <option value="guest">Guest</option>
+        </select>
+        <button (click)="addBrideGuest()" class="btn btn-primary ms-2">Add</button>
+      </div>
+      <div class="w-75">
+        <ng-container *ngFor="let role of roles">
+          <ng-container *ngIf="getGuestsByRole(brideGuests, role).length > 0">
+            <h5 class="mt-3 mb-2 text-capitalize">{{ role }}</h5>
+            <ul class="list-group mb-3">
+              <li *ngFor="let g of getGuestsByRole(brideGuests, role)" class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong [class.text-success]="g.status==='accepted'">{{ g.name }}</strong>
+                  <small class="text-muted"> ({{ g.status }})</small>
+                </div>
+                <div>
+                  <button class="btn btn-link p-0 m-0" (click)="remove(g.id)" title="Delete Guest">
+                    <mat-icon class="delete-icon">delete</mat-icon>
+                  </button>
+                </div>
+              </li>
+            </ul>
+          </ng-container>
+        </ng-container>
+      </div>
+    </div>
+    <!-- Groom's Guests -->
+    <div class="col-md-6 d-flex flex-column align-items-center justify-content-center guest-col">
+      <img src="assets/groom-shoe.png" alt="Groom Shoe" class="guest-shoe mb-3" />
+      <h2 class="mb-3 text-center">Groom's guests</h2>
+      <div class="mb-3 w-100 d-flex justify-content-center">
+        <input [(ngModel)]="newGroomName" class="form-control w-auto" placeholder="Add new guest" />
+        <select [(ngModel)]="newGroomRole" class="form-select w-auto ms-2">
+          <option value="bridesmaid">Bridesmaid</option>
+          <option value="best man">Best Man</option>
+          <option value="parent">Parent</option>
+          <option value="relative">Relative</option>
+          <option value="friend">Friend</option>
+          <option value="guest">Guest</option>
+        </select>
+        <button (click)="addGroomGuest()" class="btn btn-primary ms-2">Add</button>
+      </div>
+      <div class="w-75">
+        <ng-container *ngFor="let role of roles">
+          <ng-container *ngIf="getGuestsByRole(groomGuests, role).length > 0">
+            <h5 class="mt-3 mb-2 text-capitalize">{{ role }}</h5>
+            <ul class="list-group mb-3">
+              <li *ngFor="let g of getGuestsByRole(groomGuests, role)" class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong [class.text-success]="g.status==='accepted'">{{ g.name }}</strong>
+                  <small class="text-muted">  ({{ g.status }})</small>
+                </div>
+                <div>
+                  <button class="btn btn-link p-0 m-0" (click)="remove(g.id)" title="Delete Guest">
+                    <mat-icon class="delete-icon">delete</mat-icon>
+                  </button>
+                </div>
+              </li>
+            </ul>
+          </ng-container>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="viewMode === 'details'">
+  <h2 class="mb-4 text-center">Full Guest Details</h2>
+  <div class="d-flex justify-content-end mb-3">
+    <label class="me-2 fw-bold" for="sortSelect">Sort by:</label>
+    <select id="sortSelect" class="form-select w-auto" [(ngModel)]="sortOption">
+      <option value="alphabetical">Alphabetically</option>
+      <option value="side">By Side</option>
+      <option value="role">By Role</option>
+      <option value="rsvps">By RSVPs</option>
+    </select>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>RSVPs</th>
+          <th>Side</th>
+          <th>Role</th>
+          <th>Table Number</th>
+          <th>Meal Plan</th>
+          <th>Comments</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let g of sortedGuests">
+          <ng-container *ngIf="editingGuestId !== g.id; else editRow">
+            <td><strong [class.text-success]="g.status==='accepted'">{{ g.name }}</strong></td>
+            <td>
+              <div class="rsvp-dropdown" [class.open]="g.rsvpDropdownOpen" (click)="openRsvpDropdown(g, $event)">
+                <ng-container [ngSwitch]="g.status">
+                  <img *ngSwitchCase="'accepted'" src="assets/accepted.png" class="rsvp-icon" [style.filter]="rsvpIconFilter" alt="Accepted" />
+                  <img *ngSwitchCase="'declined'" src="assets/decline.png" class="rsvp-icon" [style.filter]="rsvpIconFilter" alt="Declined" />
+                  <img *ngSwitchDefault src="assets/pending.png" class="rsvp-icon" [style.filter]="rsvpIconFilter" alt="Pending" />
+                </ng-container>
+                <span class="rsvp-status-text">{{ g.status }}</span>
+                <div class="rsvp-dropdown-list" *ngIf="g.rsvpDropdownOpen" (click)="$event.stopPropagation()">
+                  <div *ngFor="let opt of ['accepted','declined','pending']" class="rsvp-dropdown-item" [class.selected]="g.status === opt" (click)="changeRsvpStatus(g, ($any(opt)))">
+                    <img [src]="'assets/' + (opt === 'accepted' ? 'accepted.png' : opt === 'declined' ? 'decline.png' : 'pending.png')" class="rsvp-icon" [style.filter]="rsvpIconFilter" [alt]="opt | titlecase" />
+                    <span>{{ opt }}</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="text-capitalize">{{ g.side }}</td>
+            <td class="text-capitalize">{{ g.role || 'guest' }}</td>
+            <td style="min-width:80px;">
+              <input type="number" min="1" class="form-control form-control-sm" [(ngModel)]="g.tableNumber" (change)="updateField(g, 'tableNumber', g.tableNumber)" />
+            </td>
+            <td style="min-width:120px;">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="g.mealPlan" (change)="updateField(g, 'mealPlan', g.mealPlan)" placeholder="Meal plan" />
+            </td>
+            <td style="min-width:140px;">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="g.comments" (change)="updateField(g, 'comments', g.comments)" placeholder="Comments" />
+            </td>
+            <td class="text-end">
+              <button class="btn btn-link p-0 m-0 me-2" (click)="startEdit(g)" title="Edit Guest">
+                <mat-icon class="edit-icon">edit</mat-icon>
+              </button>
+              <button class="btn btn-link p-0 m-0" (click)="remove(g.id)" title="Delete Guest">
+                <mat-icon class="delete-icon">delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+          <ng-template #editRow>
+            <td><input type="text" class="form-control form-control-sm" [(ngModel)]="editDraft.name" /></td>
+            <td>
+              <select class="form-select form-select-sm" [(ngModel)]="editDraft.status">
+                <option value="pending">pending</option>
+                <option value="accepted">accepted</option>
+                <option value="declined">declined</option>
+              </select>
+            </td>
+            <td>
+              <select class="form-select form-select-sm" [(ngModel)]="editDraft.side">
+                <option value="bride">bride</option>
+                <option value="groom">groom</option>
+              </select>
+            </td>
+            <td>
+              <select class="form-select form-select-sm" [(ngModel)]="editDraft.role">
+                <option value="bridesmaid">Bridesmaid</option>
+                <option value="best man">Best Man</option>
+                <option value="parent">Parent</option>
+                <option value="relative">Relative</option>
+                <option value="friend">Friend</option>
+                <option value="guest">Guest</option>
+              </select>
+            </td>
+            <td style="min-width:80px;">
+              <input type="number" min="1" class="form-control form-control-sm" [(ngModel)]="editDraft.tableNumber" />
+            </td>
+            <td style="min-width:120px;">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="editDraft.mealPlan" placeholder="Meal plan" />
+            </td>
+            <td style="min-width:140px;">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="editDraft.comments" placeholder="Comments" />
+            </td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-primary me-2" (click)="saveEdit()">Save</button>
+              <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">Cancel</button>
+            </td>
+          </ng-template>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- Visual Seating Chart -->
+  <div class="seating-chart-section mt-5">
+    <h3 class="mb-3 text-center">Seating Chart</h3>
+    <br/>
+    <div class="seating-chart-list d-flex flex-wrap justify-content-center gap-5">
+      <div *ngFor="let table of (guestsByTable | keyvalue)" class="seating-table-visual">
+        <div class="table-label">Table {{ table.key }}</div>
+        <div class="table-circle">
+          <ng-container *ngFor="let g of table.value; let i = index; let total = count">
+            <div class="guest-circle-wrapper" [ngStyle]="getGuestCircleStyle(i, table.value.length)">
+              <div class="guest-name">{{ g.name }}</div>
+              <div class="guest-circle"></div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
