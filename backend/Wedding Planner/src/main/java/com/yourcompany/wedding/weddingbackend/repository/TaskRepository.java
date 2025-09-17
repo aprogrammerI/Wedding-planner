@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    // STRICTLY per-user
+
     List<Task> findByOwnerId(Long ownerId);
 
     List<Task> findByOwnerIdAndAssignee(Long ownerId, Assignee assignee);

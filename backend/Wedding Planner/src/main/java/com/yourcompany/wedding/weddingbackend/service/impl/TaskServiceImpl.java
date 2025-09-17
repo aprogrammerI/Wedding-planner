@@ -53,25 +53,6 @@ public class TaskServiceImpl implements TaskService {
         return mapToDTO(saved);
     }
 
-//    @Override
-//    @Transactional
-//    public TaskDTO updateTask(Long userId, Long id, Task updated) {
-//        Task existing = taskRepo.findById(id)
-//                .orElseThrow(() -> new RuntimeException("Task not found"));
-//        if (!userId.equals(existing.getOwnerId())) {
-//            throw new RuntimeException("Forbidden");
-//        }
-//
-//        existing.setTitle(updated.getTitle());
-//        existing.setDescription(updated.getDescription());
-//        existing.setDueDate(updated.getDueDate());
-//        existing.setPriority(updated.getPriority());
-//        existing.setAssignee(updated.getAssignee());
-//        existing.setCompleted(updated.isCompleted());
-//        existing.setReminderEnabled(updated.isReminderEnabled());
-//
-//        return mapToDTO(taskRepo.save(existing));
-//    }
 
     @Override
     @Transactional
@@ -195,18 +176,6 @@ public class TaskServiceImpl implements TaskService {
         return new ProgressDTO(completed, total, percentage);
     }
 
-//    @Override
-//    public List<OverdueReminderDTO> getOverdueReminders(Long userId) {
-//        return taskRepo.findByOwnerIdAndReminderEnabledAndCompletedFalseAndDueDateBefore(
-//                        userId, true, LocalDate.now())
-//                .stream()
-//                .filter(t -> t.getDueDate() != null)
-//                .map(t -> {
-//                    long daysOverdue = LocalDate.now().toEpochDay() - t.getDueDate().toEpochDay();
-//                    return new OverdueReminderDTO(t.getTitle(), daysOverdue, t.getAssignee());
-//                })
-//                .collect(Collectors.toList());
-//    }
 
 
     @Override

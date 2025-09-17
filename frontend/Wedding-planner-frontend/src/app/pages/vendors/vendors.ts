@@ -97,11 +97,11 @@ export class Vendors implements OnInit {
   unassignTaskFromVendor(taskId: number, vendorId: number) {
     this.svc.unassignTask(vendorId, taskId).subscribe({
       next: () => {
-        // Refresh available tasks for this vendor
+
         this.loadAvailableTasks(vendorId);
-        // Refresh all tasks
+
         this.loadTasks();
-        // Refresh vendors list to show updated assigned tasks
+
         this.load();
       },
       error: (error) => {

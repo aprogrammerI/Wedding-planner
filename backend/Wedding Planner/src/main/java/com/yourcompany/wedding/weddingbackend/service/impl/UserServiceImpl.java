@@ -47,9 +47,8 @@ public class UserServiceImpl implements UserService {
     public User createUser(String name, String email, String password) {
         User user = User.builder()
                 .name(name)
-                .email(email) // Using email as username
+                .email(email)
                  .password(passwordEncoder.encode(password))
-                //.password(password)
                 .role(User.Role.USER)
                 .build();
         return userRepository.save(user);

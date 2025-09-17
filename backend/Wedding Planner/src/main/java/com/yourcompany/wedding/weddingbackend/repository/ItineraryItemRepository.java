@@ -11,7 +11,5 @@ import java.util.List;
 public interface ItineraryItemRepository extends JpaRepository<ItineraryItem, Long> {
     List<ItineraryItem> findByOwnerIdOrderByTimeAsc(Long ownerId);
 
-    // For duplicate prevention
-//    boolean existsByOwnerIdAndTimeAndEventNameIgnoreCase(Long ownerId, LocalTime time, String eventName);
-//    List<ItineraryItem> findByOwnerIdAndTime(Long ownerId, LocalTime time);
+
 }

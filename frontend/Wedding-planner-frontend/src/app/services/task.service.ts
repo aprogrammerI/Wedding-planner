@@ -215,26 +215,7 @@ export class TaskService {
     );
   }
 
-  // Get overdue reminders
-  // getOverdueReminders(): Observable<Task[]> {
-  //   return this.http.get<OverdueReminderDTO[]>(`${this.API_BASE_URL}/overdue`).pipe(
-  //     map(overdueReminders => {
-  //       // Convert overdue reminders to tasks for compatibility
-  //       return overdueReminders.map(reminder => ({
-  //         id: reminder.taskId,
-  //         title: reminder.title,
-  //         done: false,
-  //         dueDate: reminder.dueDate,
-  //         reminderEnabled: true,
-  //         reminderDate: reminder.dueDate
-  //       } as Task));
-  //     }),
-  //     catchError(error => {
-  //       console.error('Error fetching overdue reminders:', error);
-  //       return of([]);
-  //     })
-  //   );
-  // }
+
 
 
   getOverdueReminders() {

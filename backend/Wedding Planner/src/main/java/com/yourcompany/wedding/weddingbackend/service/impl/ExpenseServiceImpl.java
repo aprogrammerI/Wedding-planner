@@ -49,5 +49,5 @@ public class ExpenseServiceImpl implements ExpenseService {
         BigDecimal totalSpent = expenseRepository.sumAllAmounts();
         return totalSpent != null ? totalSpent : BigDecimal.ZERO;
     }
-    // Removed all wedding-scoped expense methods (getExpensesByWeddingId and getTotalSpentByWeddingId)
+
 }

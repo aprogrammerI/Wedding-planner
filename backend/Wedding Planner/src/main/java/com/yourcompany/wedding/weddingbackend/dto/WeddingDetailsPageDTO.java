@@ -9,8 +9,8 @@ import java.util.List;
 @Data
 @Builder
 public class WeddingDetailsPageDTO {
-    private Long detailsId;           // id of the WeddingDetails record (if any)
-    private String weddingName;       // optional: if exactly one wedding exists we include its name
+    private Long detailsId;
+    private String weddingName;
 
     private String brideFirstName;
     private String brideLastName;

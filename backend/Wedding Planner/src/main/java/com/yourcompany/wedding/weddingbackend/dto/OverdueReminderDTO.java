@@ -30,8 +30,8 @@ import java.time.LocalDate;
 public class OverdueReminderDTO {
      private Long taskId;
      private String title;
-     private String assignee;      // BRIDE | GROOM | PLANNER | OTHER
-     private long daysOverdue;     // e.g. 603
-     private LocalDate dueDate;    // optional but handy
+     private String assignee;
+     private long daysOverdue;
+     private LocalDate dueDate;
 }
 

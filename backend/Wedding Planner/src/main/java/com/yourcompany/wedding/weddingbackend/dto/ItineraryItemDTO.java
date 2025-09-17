@@ -13,5 +13,5 @@ public class ItineraryItemDTO {
     private LocalTime time;
     private String eventName;
     private String description;
-    // Removed weddingId field as it's no longer needed for a global scope
+
 }

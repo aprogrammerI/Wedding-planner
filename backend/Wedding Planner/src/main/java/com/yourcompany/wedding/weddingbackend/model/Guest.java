@@ -14,7 +14,7 @@ public class Guest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Per-user ownership
+
     @Column(nullable = false)
     private Long ownerId;
 

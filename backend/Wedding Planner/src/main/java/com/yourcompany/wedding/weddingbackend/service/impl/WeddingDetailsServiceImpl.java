@@ -87,19 +87,6 @@ public class WeddingDetailsServiceImpl implements WeddingDetailsService {
         int totalTasks = progress == null ? 0 : progress.total();
         double tasksCompletionPercentage = progress == null ? 0.0 : progress.percentage();
 
-//        BigDecimal spent = expenseRepository.sumAllAmounts(); // scope per user later if needed
-//        double spentAmount = spent == null ? 0.0 : spent.doubleValue();
-//
-//        Optional<Budget> budgetOpt = budgetRepository.findByOwnerId(userId);
-//        Double totalBudgetAmount = null;
-//        Double remainingAmount = null;
-//        Double budgetUtilizationPercentage = null;
-//        if (budgetOpt.isPresent()) {
-//            Budget b = budgetOpt.get();
-//            totalBudgetAmount = b.getTotalBudget();
-//            remainingAmount = totalBudgetAmount - spentAmount;
-//            budgetUtilizationPercentage = totalBudgetAmount == 0 ? 0.0 : (spentAmount * 100.0 / totalBudgetAmount);
-//        }
 
 
         double spentAmount = 0.0;
@@ -112,7 +99,7 @@ public class WeddingDetailsServiceImpl implements WeddingDetailsService {
         if (budgetOpt.isPresent()) {
             Budget b = budgetOpt.get();
 
-            // Sum amounts from this user's budget items
+
             spentAmount = budgetItemRepository.findByBudget(b).stream()
                     .mapToDouble(item -> item.getAmount())
                     .sum();

@@ -46,7 +46,7 @@ public class BudgetServiceImpl implements BudgetService {
 
         Budget budget = opt.get();
 
-        // Load children via separate queries (avoid multiple-bag fetch issue)
+
         List<BudgetItem> items = budgetItemRepo.findByBudget(budget);
         List<BudgetCategory> categories = budgetCategoryRepo.findByBudget(budget);
 
@@ -107,7 +107,7 @@ public class BudgetServiceImpl implements BudgetService {
         }
 
         budgetRepo.save(budget);
-        // Return fully computed aggregate after save
+
         return getBudget(userId);
     }
 

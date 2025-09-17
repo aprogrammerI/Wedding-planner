@@ -11,7 +11,5 @@ public interface ExpenseService {
     Optional<Expense> findById(Long id);
     Expense save(Expense expense);
     void deleteById(Long id);
-
-    // Restored: New method for global total spent
     BigDecimal getTotalSpent();
 }

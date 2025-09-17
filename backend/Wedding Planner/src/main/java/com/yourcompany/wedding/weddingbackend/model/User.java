@@ -18,7 +18,7 @@ public class User {
     private String name;
 
     @Column(nullable = false, unique = true)
-    private String email; // Renamed from username
+    private String email;
 
     @Column(nullable = false)
     private String password;

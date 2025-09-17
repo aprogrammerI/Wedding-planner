@@ -9,9 +9,7 @@ import java.math.BigDecimal;
 
 @Repository
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
-    // Removed findByWeddingId as it's no longer needed for a global scope
 
-    // New method to sum all expense amounts globally
     @Query("SELECT SUM(e.amount) FROM Expense e")
     BigDecimal sumAllAmounts();
 }

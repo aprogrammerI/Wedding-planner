@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface GuestRepository extends JpaRepository<Guest, Long> {
 
-    // Per-user versions of previous global methods
+
     List<Guest> findByOwnerId(Long ownerId);
     List<Guest> findByOwnerId(Long ownerId, Sort sort);
     List<Guest> findByOwnerIdAndSide(Long ownerId, GuestSide side, Sort sort);

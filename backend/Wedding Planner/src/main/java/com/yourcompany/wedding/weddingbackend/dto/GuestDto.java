@@ -26,5 +26,5 @@ public class GuestDto {
     private JsonNullable<String> mealPlan = JsonNullable.undefined();
     @Builder.Default
     private JsonNullable<String> comments = JsonNullable.undefined();
-    // Removed weddingId field as it's no longer needed for a global scope
+
 }

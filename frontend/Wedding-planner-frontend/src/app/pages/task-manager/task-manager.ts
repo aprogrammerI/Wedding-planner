@@ -1014,13 +1014,12 @@
 // // }
 
 import { Component, OnInit } from '@angular/core';
-//import { TaskService, Task } from '../../services/task.service';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService, User } from '../../services/auth.service';
 import { VendorService, Vendor } from '../../services/vendor.service';
-//import { TaskService, OverdueReminder } from '../../services/task.service'; //added
 import { TaskService, Task, OverdueReminder } from '../../services/task.service';
 
 @Component({
@@ -1081,13 +1080,13 @@ export class TaskManager implements OnInit {
   load() {
     this.svc.list().subscribe(t => {
       this.tasks = t;
-      //this.loadReminders(); // Refresh reminders when tasks are loaded
+
       this.loadOverdueReminders();
     });
   }
 
   loadAvailableUsers() {
-    // Get available users from auth service and add some common wedding roles
+
     this.availableUsers = [
       'Bride',
       'Groom',
@@ -1096,10 +1095,6 @@ export class TaskManager implements OnInit {
     ];
   }
 
-  // loadReminders() {
-  //   this.svc.getOverdueReminders().subscribe(tasks => this.overdueReminders = tasks);
-  //   this.svc.getRemindersDueSoon().subscribe(tasks => this.upcomingReminders = tasks);
-  // }
 
   loadOverdueReminders() {
     this.svc.getOverdueReminders().subscribe(reminders => {
@@ -1107,9 +1102,6 @@ export class TaskManager implements OnInit {
     });
   }
 
-  // refreshReminders() {
-  //   this.loadReminders();
-  // }
 
   refreshReminders() {
     this.loadOverdueReminders();
@@ -1130,58 +1122,13 @@ export class TaskManager implements OnInit {
 
 
 
-  // Sync reminder date with due date when due date changes
-  // onDueDateChange() {
-  //   if (this.newReminderEnabled && this.newDueDate && !this.newReminderDate) {
-  //     this.newReminderDate = this.newDueDate;
-  //   }
-  // }
 
-  // Sync reminder date with due date when reminder is enabled
+
+
   onReminderEnabledChange() {
-    // if (this.newReminderEnabled && this.newDueDate && !this.newReminderDate) {
-    //   this.newReminderDate = this.newDueDate;
-    // }
+
   }
 
-  // add() {
-  //   if (!this.newTitle.trim()) return;
-  //
-  //   // If reminder is enabled but no reminder date is set, use the due date
-  //   // const reminderDate = this.newReminderEnabled && !this.newReminderDate && this.newDueDate
-  //   //   ? this.newDueDate
-  //   //   : this.newReminderDate || undefined;
-  //
-  //   this.svc.add({
-  //     title: this.newTitle,
-  //     done: false,
-  //     description: this.newDescription || undefined,
-  //     // dueDate: this.newDueDate || undefined,
-  //     dueDate: undefined,
-  //     priority: this.newPriority,
-  //     assignedTo: this.newAssignedTo || undefined,
-  //     //reminderDate: reminderDate,
-  //     reminderDate: this.newReminderDate || undefined,
-  //     reminderEnabled: this.newReminderEnabled,
-  //   })
-  //     .subscribe({
-  //       next: () => {
-  //         this.newTitle = '';
-  //         this.newDescription = '';
-  //         // this.newDueDate = '';
-  //         this.newPriority = 'medium';
-  //         this.newAssignedTo = '';
-  //         this.newReminderDate = '';
-  //         this.newReminderEnabled = false;
-  //         this.showAddForm = false;
-  //         this.load();
-  //       },
-  //       error: (error) => {
-  //         console.error('Error adding task:', error);
-  //         alert('Failed to add task. Please try again.');
-  //       }
-  //     });
-  // }
 
 
   add() {
