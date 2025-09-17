@@ -12,9 +12,11 @@ import java.util.List;
 
 @Repository
 public interface GuestRepository extends JpaRepository<Guest, Long> {
-    List<Guest> findAll(Sort sort);
-    List<Guest> findBySide(GuestSide side, Sort sort);
-    List<Guest> findByRole(GuestRole role, Sort sort);
-    List<Guest> findByRsvpStatus(RsvpStatus rsvpStatus, Sort sort);
-    // Removed findByWeddingId as it's no longer needed for a global scope
+
+    // Per-user versions of previous global methods
+    List<Guest> findByOwnerId(Long ownerId);
+    List<Guest> findByOwnerId(Long ownerId, Sort sort);
+    List<Guest> findByOwnerIdAndSide(Long ownerId, GuestSide side, Sort sort);
+    List<Guest> findByOwnerIdAndRole(Long ownerId, GuestRole role, Sort sort);
+    List<Guest> findByOwnerIdAndRsvpStatus(Long ownerId, RsvpStatus rsvpStatus, Sort sort);
 }

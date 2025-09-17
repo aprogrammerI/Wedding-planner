@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
                 .name(name)
                 .email(email) // Using email as username
                  .password(passwordEncoder.encode(password))
-                .password(password)
+                //.password(password)
                 .role(User.Role.USER)
                 .build();
         return userRepository.save(user);

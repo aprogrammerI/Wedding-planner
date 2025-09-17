@@ -11,12 +11,14 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    // find tasks assigned to a specific person (enum Assignee)
-    List<Task> findByAssignee(Assignee assignee);
+    // STRICTLY per-user
+    List<Task> findByOwnerId(Long ownerId);
 
-    // find tasks with reminders enabled, not completed, and due before given date (used for overdue reminders)
-    List<Task> findByReminderEnabledAndCompletedFalseAndDueDateBefore(boolean reminderEnabled, LocalDate date);
+    List<Task> findByOwnerIdAndAssignee(Long ownerId, Assignee assignee);
 
-    // find tasks by completion state (used to compute progress)
-    List<Task> findByCompleted(boolean completed);
+    List<Task> findByOwnerIdAndReminderEnabledAndCompletedFalseAndDueDateBefore(
+            Long ownerId, boolean reminderEnabled, LocalDate date
+    );
+
+    List<Task> findByOwnerIdAndCompleted(Long ownerId, boolean completed);
 }

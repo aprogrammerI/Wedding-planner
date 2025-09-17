@@ -9,17 +9,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface GuestService {
-    List<Guest> findAll();
-    Optional<Guest> findById(Long id);
-    Guest save(Guest guest);
-    void deleteById(Long id);
-
-    // Restored: New method for complex grouping and sorting
-    List<Guest> findAllGuests(String groupBy, String sortBy, String sortOrder);
-
-    // Restored: New methods for filtering and sorting
-    List<Guest> findAllSorted(String sortBy, String sortOrder);
-    List<Guest> findBySideSorted(GuestSide side, String sortBy, String sortOrder);
-    List<Guest> findByRoleSorted(GuestRole role, String sortBy, String sortOrder);
-    List<Guest> findByRsvpStatusSorted(RsvpStatus rsvpStatus, String sortBy, String sortOrder);
+    List<Guest> findAll(Long userId, String groupBy, String sortBy, String sortOrder);
+    Optional<Guest> findById(Long userId, Long id);
+    Guest save(Long userId, Guest guest);
+    void deleteById(Long userId, Long id);
+    List<Guest> findAllSorted(Long userId, String sortBy, String sortOrder);
+    List<Guest> findBySideSorted(Long userId, GuestSide side, String sortBy, String sortOrder);
+    List<Guest> findByRoleSorted(Long userId, GuestRole role, String sortBy, String sortOrder);
+    List<Guest> findByRsvpStatusSorted(Long userId, RsvpStatus rsvpStatus, String sortBy, String sortOrder);
 }

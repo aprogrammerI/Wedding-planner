@@ -16,74 +16,70 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tasks")
+@CrossOrigin
 @RequiredArgsConstructor
 public class TaskController {
     private final TaskService taskService;
 
-    //  Main tasks list (with subtasks embedded)
     @GetMapping
     public List<TaskDTO> getAllTasks(
-            @RequestParam(required = false) Assignee assignee // optional query param
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestParam(required = false) Assignee assignee
     ) {
         if (assignee != null) {
-            return taskService.getTasksByAssignee(assignee);
+            return taskService.getTasksByAssignee(userId, assignee);
         } else {
-            return taskService.getAllTasks();
+            return taskService.getAllTasks(userId);
         }
     }
 
     @PostMapping
-    public TaskDTO createTask(@RequestBody Task task) {
-        return taskService.createTask(task);
+    public TaskDTO createTask(@RequestHeader("X-User-Id") Long userId, @RequestBody Task task) {
+        return taskService.createTask(userId, task);
     }
 
     @PutMapping("/{id}")
-    public TaskDTO updateTask(@PathVariable Long id, @RequestBody Task updated) {
-        return taskService.updateTask(id, updated);
+    public TaskDTO updateTask(@RequestHeader("X-User-Id") Long userId, @PathVariable Long id, @RequestBody Task updated) {
+        return taskService.updateTask(userId, id, updated);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTask(@PathVariable Long id) {
-        taskService.deleteTask(id);
+    public void deleteTask(@RequestHeader("X-User-Id") Long userId, @PathVariable Long id) {
+        taskService.deleteTask(userId, id);
     }
 
-    //  Task Completion Status
     @PatchMapping("/{taskId}/complete")
-    public void updateTaskCompletion(@PathVariable Long taskId, @RequestParam boolean completed) {
-        taskService.updateTaskCompletion(taskId, completed);
+    public void updateTaskCompletion(@RequestHeader("X-User-Id") Long userId, @PathVariable Long taskId, @RequestParam boolean completed) {
+        taskService.updateTaskCompletion(userId, taskId, completed);
     }
 
-    //  Subtasks
     @PostMapping("/{taskId}/subtasks")
-    public SubtaskDTO addSubtask(@PathVariable Long taskId, @RequestBody Subtask subtask) {
-        return taskService.addSubtask(taskId, subtask);
+    public SubtaskDTO addSubtask(@RequestHeader("X-User-Id") Long userId, @PathVariable Long taskId, @RequestBody Subtask subtask) {
+        return taskService.addSubtask(userId, taskId, subtask);
     }
 
     @PutMapping("/{taskId}/subtasks/{subtaskId}")
-    public SubtaskDTO updateSubtask(@PathVariable Long taskId, @PathVariable Long subtaskId, @RequestBody Subtask updated) {
-        return taskService.updateSubtask(taskId, subtaskId, updated);
+    public SubtaskDTO updateSubtask(@RequestHeader("X-User-Id") Long userId, @PathVariable Long taskId, @PathVariable Long subtaskId, @RequestBody Subtask updated) {
+        return taskService.updateSubtask(userId, taskId, subtaskId, updated);
     }
 
     @DeleteMapping("/{taskId}/subtasks/{subtaskId}")
-    public void deleteSubtask(@PathVariable Long taskId, @PathVariable Long subtaskId) {
-        taskService.deleteSubtask(taskId, subtaskId);
+    public void deleteSubtask(@RequestHeader("X-User-Id") Long userId, @PathVariable Long taskId, @PathVariable Long subtaskId) {
+        taskService.deleteSubtask(userId, taskId, subtaskId);
     }
 
-    // ✅ Progress bar
     @GetMapping("/progress")
-    public ProgressDTO getProgress() {
-        return taskService.getProgress();
+    public ProgressDTO getProgress(@RequestHeader("X-User-Id") Long userId) {
+        return taskService.getProgress(userId);
     }
 
-    // ✅ Overdue reminders
     @GetMapping("/overdue")
-    public List<OverdueReminderDTO> getOverdueReminders() {
-        return taskService.getOverdueReminders();
+    public List<OverdueReminderDTO> getOverdueReminders(@RequestHeader("X-User-Id") Long userId) {
+        return taskService.getOverdueReminders(userId);
     }
 
-    // ✅ Tasks grouped by priority
     @GetMapping("/by-priority")
-    public Map<String, List<TaskDTO>> getTasksGroupedByPriority() {
-        return taskService.getTasksGroupedByPriority();
+    public Map<String, List<TaskDTO>> getTasksGroupedByPriority(@RequestHeader("X-User-Id") Long userId) {
+        return taskService.getTasksGroupedByPriority(userId);
     }
 }

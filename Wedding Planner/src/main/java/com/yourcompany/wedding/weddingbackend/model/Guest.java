@@ -14,28 +14,32 @@ public class Guest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Per-user ownership
+    @Column(nullable = false)
+    private Long ownerId;
+
     @Column(nullable = false)
     private String name;
 
-    @Builder.Default // Added @Builder.Default
-    @Enumerated(EnumType.STRING) // Store enum as string in DB
-    private RsvpStatus rsvpStatus = RsvpStatus.PENDING; 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private RsvpStatus rsvpStatus = RsvpStatus.PENDING;
 
-    @Builder.Default // Added @Builder.Default
-    @Enumerated(EnumType.STRING) // Store enum as string in DB
-    private GuestSide side = null; // Assuming null is default for side if not specified
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private GuestSide side = null;
 
-    @Builder.Default // Added @Builder.Default
-    @Enumerated(EnumType.STRING) // Store enum as string in DB
-    private GuestRole role = null; // Assuming null is default for role if not specified
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private GuestRole role = null;
 
-    @Builder.Default // Added @Builder.Default
-    private Integer tableNumber = null; 
+    @Builder.Default
+    private Integer tableNumber = null;
 
-    @Builder.Default // Added @Builder.Default
-    private String mealPlan = null;     
+    @Builder.Default
+    private String mealPlan = null;
 
-    @Builder.Default // Added @Builder.Default
+    @Builder.Default
     @Column(columnDefinition = "TEXT")
-    private String comments = null;     
+    private String comments = null;
 }

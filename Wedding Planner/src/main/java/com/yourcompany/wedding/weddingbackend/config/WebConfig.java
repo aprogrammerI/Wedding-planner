@@ -9,11 +9,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     // CORS for Angular dev server (safe to keep)
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
+//        registry.addMapping("/**")
+//                .allowedOrigins("http://localhost:4200")
+//                .allowedMethods("*");
+//    }
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins("http://localhost:4200")
-                .allowedMethods("*");
+                .allowedMethods("*")
+                .allowedHeaders("*")
+                .allowCredentials(true);
     }
 
     // SPA fallback that does NOT swallow /assets/... or files with dots.
@@ -25,4 +34,7 @@ public class WebConfig implements WebMvcConfigurer {
         // Note: we intentionally do NOT add the "/{spring}/**" mapping here,
         // because it would also catch static assets (e.g., /assets/logo.png).
     }
+
+
+
 }

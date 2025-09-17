@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -29,26 +31,20 @@ public class WeddingDetailsServiceImpl implements WeddingDetailsService {
     private final ItineraryItemRepository itineraryItemRepository;
     private final ExpenseRepository expenseRepository;
     private final BudgetRepository budgetRepository;
-    private final TaskService taskService; // global task service (non-wedding scoped)
+
+    private final BudgetItemRepository budgetItemRepository; // add this
+    private final TaskService taskService;
 
     @Override
-    public Optional<WeddingDetailsDTO> getWeddingDetails() {
-        return weddingDetailsRepository.findAll().stream().findFirst().map(this::toDto);
+    public Optional<WeddingDetailsDTO> getWeddingDetails(Long userId) {
+        return weddingDetailsRepository.findTopByOwnerIdOrderByIdAsc(userId).map(this::toDto);
     }
 
     @Override
     @Transactional
-    public WeddingDetailsDTO saveWeddingDetails(WeddingDetailsDTO dto) {
-        // If dto.id provided, update that record; else if any record exists update the first; else create new.
-        com.yourcompany.wedding.weddingbackend.model.WeddingDetails entity;
-        if (dto.getId() != null) {
-            entity = weddingDetailsRepository.findById(dto.getId())
-                    .orElseGet(() -> com.yourcompany.wedding.weddingbackend.model.WeddingDetails.builder().build());
-        } else {
-            entity = weddingDetailsRepository.findAll().stream().findFirst().orElseGet(
-                    () -> com.yourcompany.wedding.weddingbackend.model.WeddingDetails.builder().build()
-            );
-        }
+    public WeddingDetailsDTO saveWeddingDetails(Long userId, WeddingDetailsDTO dto) {
+        var entity = weddingDetailsRepository.findTopByOwnerIdOrderByIdAsc(userId)
+                .orElseGet(() -> com.yourcompany.wedding.weddingbackend.model.WeddingDetails.builder().ownerId(userId).build());
 
         entity.setBrideFirstName(dto.getBrideFirstName());
         entity.setBrideLastName(dto.getBrideLastName());
@@ -64,9 +60,8 @@ public class WeddingDetailsServiceImpl implements WeddingDetailsService {
     }
 
     @Override
-    public WeddingDetailsPageDTO getWeddingDetailsPageData() {
-        // WeddingDetails (raw values) - pick first if present
-        Optional<com.yourcompany.wedding.weddingbackend.model.WeddingDetails> wdOpt = weddingDetailsRepository.findAll().stream().findFirst();
+    public WeddingDetailsPageDTO getWeddingDetailsPageData(Long userId) {
+        var wdOpt = weddingDetailsRepository.findTopByOwnerIdOrderByIdAsc(userId);
 
         String brideFirst = wdOpt.map(com.yourcompany.wedding.weddingbackend.model.WeddingDetails::getBrideFirstName).orElse(null);
         String brideLast  = wdOpt.map(com.yourcompany.wedding.weddingbackend.model.WeddingDetails::getBrideLastName).orElse(null);
@@ -81,50 +76,60 @@ public class WeddingDetailsServiceImpl implements WeddingDetailsService {
 
         Long detailsId = wdOpt.map(com.yourcompany.wedding.weddingbackend.model.WeddingDetails::getId).orElse(null);
 
-        // Guests: global findAll
-        List<Guest> guests = guestRepository.findAll();
-
-        int brideGuestCount = (int) guests.stream()
-                .filter(g -> g.getSide() != null && g.getSide().name().equalsIgnoreCase("BRIDE"))
-                .count();
-        int groomGuestCount = (int) guests.stream()
-                .filter(g -> g.getSide() != null && g.getSide().name().equalsIgnoreCase("GROOM"))
-                .count();
+        List<Guest> guests = guestRepository.findByOwnerId(userId);
+        int brideGuestCount = (int) guests.stream().filter(g -> g.getSide() != null && g.getSide().name().equalsIgnoreCase("BRIDE")).count();
+        int groomGuestCount = (int) guests.stream().filter(g -> g.getSide() != null && g.getSide().name().equalsIgnoreCase("GROOM")).count();
         int totalGuestCount = guests.size();
-        int confirmedRsvpsCount = (int) guests.stream()
-                .filter(g -> g.getRsvpStatus() == RsvpStatus.ACCEPTED)
-                .count();
+        int confirmedRsvpsCount = (int) guests.stream().filter(g -> g.getRsvpStatus() == RsvpStatus.ACCEPTED).count();
 
-        // Tasks: global service
-        ProgressDTO progress = taskService.getProgress();
+        ProgressDTO progress = taskService.getProgress(userId);
         int completedTasks = progress == null ? 0 : progress.completed();
         int totalTasks = progress == null ? 0 : progress.total();
         double tasksCompletionPercentage = progress == null ? 0.0 : progress.percentage();
 
-        // Expenses: global sumAllAmounts
-        BigDecimal spent = expenseRepository.sumAllAmounts();
-        double spentAmount = spent == null ? 0.0 : spent.doubleValue();
+//        BigDecimal spent = expenseRepository.sumAllAmounts(); // scope per user later if needed
+//        double spentAmount = spent == null ? 0.0 : spent.doubleValue();
+//
+//        Optional<Budget> budgetOpt = budgetRepository.findByOwnerId(userId);
+//        Double totalBudgetAmount = null;
+//        Double remainingAmount = null;
+//        Double budgetUtilizationPercentage = null;
+//        if (budgetOpt.isPresent()) {
+//            Budget b = budgetOpt.get();
+//            totalBudgetAmount = b.getTotalBudget();
+//            remainingAmount = totalBudgetAmount - spentAmount;
+//            budgetUtilizationPercentage = totalBudgetAmount == 0 ? 0.0 : (spentAmount * 100.0 / totalBudgetAmount);
+//        }
 
-        // Budget: pick first budget if present (single-wedding assumption)
+
+        double spentAmount = 0.0;
+
+        Optional<Budget> budgetOpt = budgetRepository.findByOwnerId(userId);
         Double totalBudgetAmount = null;
         Double remainingAmount = null;
         Double budgetUtilizationPercentage = null;
-        Optional<Budget> budgetOpt = budgetRepository.findTopByOrderByIdAsc();
+
         if (budgetOpt.isPresent()) {
             Budget b = budgetOpt.get();
+
+            // Sum amounts from this user's budget items
+            spentAmount = budgetItemRepository.findByBudget(b).stream()
+                    .mapToDouble(item -> item.getAmount())
+                    .sum();
+
             totalBudgetAmount = b.getTotalBudget();
             remainingAmount = totalBudgetAmount - spentAmount;
             budgetUtilizationPercentage = totalBudgetAmount == 0 ? 0.0 : (spentAmount * 100.0 / totalBudgetAmount);
         }
 
-        // Itinerary: global findAllByOrderByTimeAsc
-        List<ItineraryItemDTO> itineraryDtos = itineraryItemRepository.findAllByOrderByTimeAsc().stream()
+
+        List<ItineraryItemDTO> itineraryDtos = itineraryItemRepository.findByOwnerIdOrderByTimeAsc(userId).stream()
                 .map(it -> new ItineraryItemDTO(it.getId(), it.getTime(), it.getEventName(), it.getDescription()))
                 .collect(Collectors.toList());
 
         return WeddingDetailsPageDTO.builder()
                 .detailsId(detailsId)
-                .weddingName(null) // Wedding name is no longer derived from Wedding entity
+                .weddingName(null)
                 .brideFirstName(brideFirst)
                 .brideLastName(brideLast)
                 .brideAge(brideAge)

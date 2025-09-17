@@ -18,50 +18,44 @@ public class VendorController {
 
     private final VendorService vendorService;
 
-    // Create
     @PostMapping
-    public VendorDTO create(@RequestBody CreateVendorRequest request) {
-        return vendorService.create(request);
+    public VendorDTO create(@RequestHeader("X-User-Id") Long userId, @RequestBody CreateVendorRequest request) {
+        return vendorService.create(userId, request);
     }
 
-    // Read
     @GetMapping
-    public List<VendorDTO> getAll() {
-        return vendorService.getAll();
+    public List<VendorDTO> getAll(@RequestHeader("X-User-Id") Long userId) {
+        return vendorService.getAll(userId);
     }
 
     @GetMapping("/{id}")
-    public VendorDTO getById(@PathVariable Long id) {
-        return vendorService.getById(id);
+    public VendorDTO getById(@RequestHeader("X-User-Id") Long userId, @PathVariable Long id) {
+        return vendorService.getById(userId, id);
     }
 
-    // Update
     @PutMapping("/{id}")
-    public VendorDTO update(@PathVariable Long id, @RequestBody CreateVendorRequest request) {
-        return vendorService.update(id, request);
+    public VendorDTO update(@RequestHeader("X-User-Id") Long userId, @PathVariable Long id, @RequestBody CreateVendorRequest request) {
+        return vendorService.update(userId, id, request);
     }
 
-    // Delete
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        vendorService.delete(id);
+    public ResponseEntity<Void> delete(@RequestHeader("X-User-Id") Long userId, @PathVariable Long id) {
+        vendorService.delete(userId, id);
         return ResponseEntity.noContent().build();
     }
 
-    // Assign / Unassign
     @PostMapping("/{vendorId}/assign")
-    public VendorDTO assignTask(@PathVariable Long vendorId, @RequestParam Long taskId) {
-        return vendorService.assignTask(vendorId, taskId);
+    public VendorDTO assignTask(@RequestHeader("X-User-Id") Long userId, @PathVariable Long vendorId, @RequestParam Long taskId) {
+        return vendorService.assignTask(userId, vendorId, taskId);
     }
 
     @DeleteMapping("/{vendorId}/assign/{taskId}")
-    public VendorDTO unassignTask(@PathVariable Long vendorId, @PathVariable Long taskId) {
-        return vendorService.unassignTask(vendorId, taskId);
+    public VendorDTO unassignTask(@RequestHeader("X-User-Id") Long userId, @PathVariable Long vendorId, @PathVariable Long taskId) {
+        return vendorService.unassignTask(userId, vendorId, taskId);
     }
 
-    // Dropdown: unfinished + not already assigned
     @GetMapping("/{vendorId}/available-tasks")
-    public List<TaskSummaryDTO> getAvailableTasks(@PathVariable Long vendorId) {
-        return vendorService.getAvailableUnfinishedTasksForVendor(vendorId);
+    public List<TaskSummaryDTO> getAvailableTasks(@RequestHeader("X-User-Id") Long userId, @PathVariable Long vendorId) {
+        return vendorService.getAvailableUnfinishedTasksForVendor(userId, vendorId);
     }
 }

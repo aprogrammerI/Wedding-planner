@@ -9,9 +9,9 @@ import java.util.List;
 
 @Repository
 public interface ItineraryItemRepository extends JpaRepository<ItineraryItem, Long> {
-    // Removed findByWeddingIdOrderByTimeAsc as it's no longer needed for a global scope
-    List<ItineraryItem> findAllByOrderByTimeAsc();
+    List<ItineraryItem> findByOwnerIdOrderByTimeAsc(Long ownerId);
 
-    // For double booking check, now globally
-    List<ItineraryItem> findByTime(LocalTime time);
+    // For duplicate prevention
+//    boolean existsByOwnerIdAndTimeAndEventNameIgnoreCase(Long ownerId, LocalTime time, String eventName);
+//    List<ItineraryItem> findByOwnerIdAndTime(Long ownerId, LocalTime time);
 }

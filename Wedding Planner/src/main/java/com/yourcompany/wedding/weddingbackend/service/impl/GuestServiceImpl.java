@@ -29,70 +29,34 @@ public class GuestServiceImpl implements GuestService {
     }
 
     @Override
-    public List<Guest> findAll() {
-        return guestRepository.findAll();
-    }
-
-    @Override
-    public Optional<Guest> findById(Long id) {
-        return guestRepository.findById(id);
-    }
-
-    @Override
-    @Transactional
-    public Guest save(Guest guest) {
-        return guestRepository.save(guest);
-    }
-
-    @Override
-    @Transactional
-    public void deleteById(Long id) {
-        guestRepository.deleteById(id);
-    }
-
-    @Override
-    public List<Guest> findAllGuests(String groupBy, String sortBy, String sortOrder) {
-        List<Guest> guests = guestRepository.findAll();
+    public List<Guest> findAll(Long userId, String groupBy, String sortBy, String sortOrder) {
+        List<Guest> guests = guestRepository.findByOwnerId(userId);
 
         Comparator<Guest> comparator = (g1, g2) -> 0;
 
         if ("side".equalsIgnoreCase(groupBy)) {
-            comparator = comparator.thenComparing(Guest::getSide, Comparator.nullsLast(
-                    (s1, s2) -> {
-                        if (s1 == GuestSide.BRIDE && s2 == GuestSide.GROOM) return -1;
-                        if (s1 == GuestSide.GROOM && s2 == GuestSide.BRIDE) return 1;
-                        return 0;
-                    }
-            ));
+            comparator = comparator.thenComparing(Guest::getSide, Comparator.nullsLast((s1, s2) -> {
+                if (s1 == GuestSide.BRIDE && s2 == GuestSide.GROOM) return -1;
+                if (s1 == GuestSide.GROOM && s2 == GuestSide.BRIDE) return 1;
+                return 0;
+            }));
         } else if ("role".equalsIgnoreCase(groupBy)) {
-            comparator = comparator.thenComparing(Guest::getRole, Comparator.nullsLast(
-                    (r1, r2) -> {
-                        List<GuestRole> roleOrder = List.of(
-                                GuestRole.BRIDESMAID,
-                                GuestRole.BEST_MAN,
-                                GuestRole.PARENT,
-                                GuestRole.RELATIVE,
-                                GuestRole.FRIEND,
-                                GuestRole.GUEST
-                        );
-                        int index1 = roleOrder.indexOf(r1);
-                        int index2 = roleOrder.indexOf(r2);
-                        return Integer.compare(index1, index2);
-                    }
-            ));
+            comparator = comparator.thenComparing(Guest::getRole, Comparator.nullsLast((r1, r2) -> {
+                List<GuestRole> roleOrder = List.of(
+                        GuestRole.BRIDESMAID, GuestRole.BEST_MAN, GuestRole.PARENT,
+                        GuestRole.RELATIVE, GuestRole.FRIEND, GuestRole.GUEST
+                );
+                int index1 = roleOrder.indexOf(r1);
+                int index2 = roleOrder.indexOf(r2);
+                return Integer.compare(index1, index2);
+            }));
         } else if ("rsvpStatus".equalsIgnoreCase(groupBy)) {
-            comparator = comparator.thenComparing(Guest::getRsvpStatus, Comparator.nullsLast(
-                    (r1, r2) -> {
-                        List<RsvpStatus> rsvpOrder = List.of(
-                                RsvpStatus.ACCEPTED,
-                                RsvpStatus.PENDING,
-                                RsvpStatus.DECLINED
-                        );
-                        int index1 = rsvpOrder.indexOf(r1);
-                        int index2 = rsvpOrder.indexOf(r2);
-                        return Integer.compare(index1, index2);
-                    }
-            ));
+            comparator = comparator.thenComparing(Guest::getRsvpStatus, Comparator.nullsLast((r1, r2) -> {
+                List<RsvpStatus> rsvpOrder = List.of(RsvpStatus.ACCEPTED, RsvpStatus.PENDING, RsvpStatus.DECLINED);
+                int index1 = rsvpOrder.indexOf(r1);
+                int index2 = rsvpOrder.indexOf(r2);
+                return Integer.compare(index1, index2);
+            }));
         }
 
         if (sortBy != null && !sortBy.isEmpty()) {
@@ -107,39 +71,60 @@ public class GuestServiceImpl implements GuestService {
                 default:
                     secondarySort = (g1, g2) -> 0;
             }
-
             if ("DESC".equalsIgnoreCase(sortOrder)) {
                 secondarySort = secondarySort.reversed();
             }
             comparator = comparator.thenComparing(secondarySort);
         }
 
-        return guests.stream()
-                .sorted(comparator)
-                .collect(Collectors.toList());
+        return guests.stream().sorted(comparator).collect(Collectors.toList());
     }
 
     @Override
-    public List<Guest> findAllSorted(String sortBy, String sortOrder) {
-        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
-        return guestRepository.findAll(sort);
+    public Optional<Guest> findById(Long userId, Long id) {
+        return guestRepository.findById(id).filter(g -> userId.equals(g.getOwnerId()));
     }
 
     @Override
-    public List<Guest> findBySideSorted(GuestSide side, String sortBy, String sortOrder) {
-        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
-        return guestRepository.findBySide(side, sort);
+    @Transactional
+    public Guest save(Long userId, Guest guest) {
+        if (guest.getId() == null) {
+            guest.setOwnerId(userId);
+        } else if (!userId.equals(guest.getOwnerId())) {
+            throw new RuntimeException("Forbidden: guest does not belong to this user");
+        }
+        return guestRepository.save(guest);
     }
 
     @Override
-    public List<Guest> findByRoleSorted(GuestRole role, String sortBy, String sortOrder) {
-        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
-        return guestRepository.findByRole(role, sort);
+    @Transactional
+    public void deleteById(Long userId, Long id) {
+        Guest g = guestRepository.findById(id).orElseThrow(() -> new RuntimeException("Guest not found"));
+        if (!userId.equals(g.getOwnerId())) throw new RuntimeException("Forbidden");
+        guestRepository.deleteById(id);
     }
 
     @Override
-    public List<Guest> findByRsvpStatusSorted(RsvpStatus rsvpStatus, String sortBy, String sortOrder) {
+    public List<Guest> findAllSorted(Long userId, String sortBy, String sortOrder) {
         Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
-        return guestRepository.findByRsvpStatus(rsvpStatus, sort);
+        return guestRepository.findByOwnerId(userId, sort);
+    }
+
+    @Override
+    public List<Guest> findBySideSorted(Long userId, GuestSide side, String sortBy, String sortOrder) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
+        return guestRepository.findByOwnerIdAndSide(userId, side, sort);
+    }
+
+    @Override
+    public List<Guest> findByRoleSorted(Long userId, GuestRole role, String sortBy, String sortOrder) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
+        return guestRepository.findByOwnerIdAndRole(userId, role, sort);
+    }
+
+    @Override
+    public List<Guest> findByRsvpStatusSorted(Long userId, RsvpStatus rsvpStatus, String sortBy, String sortOrder) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
+        return guestRepository.findByOwnerIdAndRsvpStatus(userId, rsvpStatus, sort);
     }
 }

@@ -16,10 +16,13 @@ public class ItineraryItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Per-user ownership
+    @Column(nullable = false)
+    private Long ownerId;
+
     private LocalTime time;
     private String eventName;
+
     @Column(columnDefinition = "NVARCHAR(MAX)")
     private String description;
-    
-    // Removed @ManyToOne Wedding wedding; field as it's no longer needed for a global scope
 }

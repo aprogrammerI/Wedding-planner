@@ -22,6 +22,10 @@ public class Budget {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Per-user ownership
+    @Column(nullable = false)
+    private Long ownerId;
+
     private double totalBudget;
 
     @Default

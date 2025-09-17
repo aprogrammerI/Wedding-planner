@@ -8,204 +8,111 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ItineraryItemServiceImpl implements ItineraryItemService {
 
-    private final ItineraryItemRepository itineraryItemRepository;
+    private final ItineraryItemRepository repo;
 
     @Override
-    public List<ItineraryItemDTO> getItinerary() {
-        return itineraryItemRepository.findAllByOrderByTimeAsc().stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
+    public List<ItineraryItemDTO> getItinerary(Long userId) {
+        return repo.findByOwnerIdOrderByTimeAsc(userId).stream()
+                .map(i -> new ItineraryItemDTO(i.getId(), i.getTime(), i.getEventName(), i.getDescription()))
+                .toList();
     }
 
-    @Override
-    @Transactional
-    public ItineraryItemDTO addItineraryItem(ItineraryItemDTO dto) {
-        // Normalize to minutes (zero seconds + nanos)
-        LocalTime timeToCheck = normalizeToMinutes(dto.getTime());
-
-        if (isDoubleBooked(timeToCheck, null)) {
-            throw new RuntimeException("Double booking detected for " + timeToCheck);
-        }
-
-        ItineraryItem item = ItineraryItem.builder()
-                .time(timeToCheck)
-                .eventName(dto.getEventName())
-                .description(dto.getDescription())
-                .build();
-
-        ItineraryItem saved = itineraryItemRepository.save(item);
-        return mapToDTO(saved);
-    }
-
-    @Override
-    @Transactional
-    public ItineraryItemDTO updateItineraryItem(Long itemId, ItineraryItemDTO dto) {
-        ItineraryItem existingItem = itineraryItemRepository.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Itinerary item not found with ID: " + itemId));
-
-        LocalTime newTime = normalizeToMinutes(dto.getTime());
-
-        if (!normalizeToMinutes(existingItem.getTime()).equals(newTime)) {
-            if (isDoubleBooked(newTime, itemId)) {
-                throw new RuntimeException("Double booking detected for " + newTime);
-            }
-        }
-
-        existingItem.setTime(newTime);
-        existingItem.setEventName(dto.getEventName());
-        existingItem.setDescription(dto.getDescription());
-
-        ItineraryItem updated = itineraryItemRepository.save(existingItem);
-        return mapToDTO(updated);
-    }
-
-    @Override
-    @Transactional
-    public void deleteItineraryItem(Long itemId) {
-        ItineraryItem existingItem = itineraryItemRepository.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Itinerary item not found with ID: " + itemId));
-        itineraryItemRepository.delete(existingItem);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean isDoubleBooked(LocalTime time, Long currentItemId) {
-        LocalTime truncatedTime = normalizeToMinutes(time);
-
-        List<ItineraryItem> sameTimeItems = itineraryItemRepository.findByTime(truncatedTime);
-        boolean conflict = sameTimeItems.stream()
-                .anyMatch(item -> currentItemId == null || !item.getId().equals(currentItemId));
-
-        return conflict;
-    }
-
-    private LocalTime normalizeToMinutes(LocalTime time) {
-        return time.withSecond(0).withNano(0);
-    }
-
-    private ItineraryItemDTO mapToDTO(ItineraryItem itineraryItem) {
-        return ItineraryItemDTO.builder()
-                .id(itineraryItem.getId())
-                .time(itineraryItem.getTime())
-                .eventName(itineraryItem.getEventName())
-                .description(itineraryItem.getDescription())
-                .build();
-    }
-}
-
-
-
-
-
-//package com.yourcompany.wedding.weddingbackend.service.impl;
-//
-//import com.yourcompany.wedding.weddingbackend.dto.ItineraryItemDTO;
-//import com.yourcompany.wedding.weddingbackend.model.ItineraryItem;
-//import com.yourcompany.wedding.weddingbackend.repository.ItineraryItemRepository;
-//import com.yourcompany.wedding.weddingbackend.service.ItineraryItemService;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
-//
-//import java.time.LocalTime;
-//import java.time.temporal.ChronoUnit;
-//import java.util.List;
-//import java.util.stream.Collectors;
-//
-//@Service
-//@RequiredArgsConstructor
-//@Transactional(readOnly = true)
-//public class ItineraryItemServiceImpl implements ItineraryItemService {
-//
-//    private final ItineraryItemRepository itineraryItemRepository;
-//
-//    @Override
-//    public List<ItineraryItemDTO> getItinerary() {
-//        return itineraryItemRepository.findAllByOrderByTimeAsc().stream()
-//                .map(this::mapToDTO)
-//                .collect(Collectors.toList());
-//    }
-//
 //    @Override
 //    @Transactional
-//    public ItineraryItemDTO addItineraryItem(ItineraryItemDTO dto) {
-//        // Truncate time to minutes before checking double booking
-//        LocalTime timeToCheck = dto.getTime().truncatedTo(java.time.temporal.ChronoUnit.MINUTES);
-//
-//        if (isDoubleBooked(timeToCheck, null)) {
-//            throw new RuntimeException("Double booking detected for " + timeToCheck);
-//        }
-//
-//        ItineraryItem item = ItineraryItem.builder()
-//                .time(timeToCheck)
+//    public ItineraryItemDTO addItineraryItem(Long userId, ItineraryItemDTO dto) {
+//        ItineraryItem entity = ItineraryItem.builder()
+//                .ownerId(userId)
+//                .time(dto.getTime())
 //                .eventName(dto.getEventName())
 //                .description(dto.getDescription())
 //                .build();
-//
-//        ItineraryItem saved = itineraryItemRepository.save(item);
-//        return mapToDTO(saved);
+//        ItineraryItem saved = repo.save(entity);
+//        return new ItineraryItemDTO(saved.getId(), saved.getTime(), saved.getEventName(), saved.getDescription());
 //    }
-//
+
+
+    @Override
+    @Transactional
+    public ItineraryItemDTO addItineraryItem(Long userId, ItineraryItemDTO dto) {
+        var time = dto.getTime();
+        var name = dto.getEventName() == null ? null : dto.getEventName().trim();
+
+        // In-memory duplicate check: same user + same HH:mm (ignore seconds) → reject
+        var existingForUser = repo.findByOwnerIdOrderByTimeAsc(userId);
+        boolean dup = time != null && existingForUser.stream().anyMatch(i ->
+                i.getTime() != null &&
+                        i.getTime().getHour() == time.getHour() &&
+                        i.getTime().getMinute() == time.getMinute()
+        );
+        if (dup) {
+            throw new RuntimeException("Duplicate itinerary time for this user");
+        }
+
+        ItineraryItem entity = ItineraryItem.builder()
+                .ownerId(userId)
+                .time(time)
+                .eventName(name)
+                .description(dto.getDescription())
+                .build();
+        ItineraryItem saved = repo.save(entity);
+        return new ItineraryItemDTO(saved.getId(), saved.getTime(), saved.getEventName(), saved.getDescription());
+    }
 //    @Override
 //    @Transactional
-//    public ItineraryItemDTO updateItineraryItem(Long itemId, ItineraryItemDTO dto) {
-//        ItineraryItem existingItem = itineraryItemRepository.findById(itemId)
-//                .orElseThrow(() -> new RuntimeException("Itinerary item not found with ID: " + itemId));
-//
-//        LocalTime newTime = dto.getTime().truncatedTo(java.time.temporal.ChronoUnit.MINUTES);
-//
-//        if (!existingItem.getTime().truncatedTo(java.time.temporal.ChronoUnit.MINUTES).equals(newTime)) {
-//            if (isDoubleBooked(newTime, itemId)) {
-//                throw new RuntimeException("Double booking detected for " + newTime);
-//            }
-//        }
-//
-//        existingItem.setTime(newTime);
-//        existingItem.setEventName(dto.getEventName());
-//        existingItem.setDescription(dto.getDescription());
-//
-//        ItineraryItem updated = itineraryItemRepository.save(existingItem);
-//        return mapToDTO(updated);
+//    public ItineraryItemDTO updateItineraryItem(Long userId, Long itemId, ItineraryItemDTO dto) {
+//        ItineraryItem existing = repo.findById(itemId).orElseThrow(() -> new RuntimeException("Itinerary item not found"));
+//        if (!userId.equals(existing.getOwnerId())) throw new RuntimeException("Forbidden");
+//        if (dto.getTime() != null) existing.setTime(dto.getTime());
+//        if (dto.getEventName() != null) existing.setEventName(dto.getEventName());
+//        if (dto.getDescription() != null) existing.setDescription(dto.getDescription());
+//        ItineraryItem saved = repo.save(existing);
+//        return new ItineraryItemDTO(saved.getId(), saved.getTime(), saved.getEventName(), saved.getDescription());
 //    }
-//
-//    @Override
-//    @Transactional
-//    public void deleteItineraryItem(Long itemId) {
-//        ItineraryItem existingItem = itineraryItemRepository.findById(itemId)
-//                .orElseThrow(() -> new RuntimeException("Itinerary item not found with ID: " + itemId));
-//        itineraryItemRepository.delete(existingItem);
-//    }
-//
-//    @Override
-//    @Transactional(readOnly = true)
-//    public boolean isDoubleBooked(LocalTime time, Long currentItemId) {
-//        // Truncate to minutes to avoid nanosecond issues
-//        LocalTime truncatedTime = time.truncatedTo(java.time.temporal.ChronoUnit.MINUTES);
-//
-//        List<ItineraryItem> conflictingItems = itineraryItemRepository.findAll().stream()
-//                .filter(item -> item.getTime().truncatedTo(java.time.temporal.ChronoUnit.MINUTES)
-//                        .equals(truncatedTime))
-//                .filter(item -> currentItemId == null || !item.getId().equals(currentItemId))
-//                .toList();
-//
-//        return !conflictingItems.isEmpty();
-//    }
-//
-//    private ItineraryItemDTO mapToDTO(ItineraryItem itineraryItem) {
-//        return ItineraryItemDTO.builder()
-//                .id(itineraryItem.getId())
-//                .time(itineraryItem.getTime())
-//                .eventName(itineraryItem.getEventName())
-//                .description(itineraryItem.getDescription())
-//                .build();
-//    }
-//}
+
+
+    @Override
+    @Transactional
+    public ItineraryItemDTO updateItineraryItem(Long userId, Long itemId, ItineraryItemDTO dto) {
+        ItineraryItem existing = repo.findById(itemId).orElseThrow(() -> new RuntimeException("Itinerary item not found"));
+        if (!userId.equals(existing.getOwnerId())) throw new RuntimeException("Forbidden");
+
+        var newTime = dto.getTime() != null ? dto.getTime() : existing.getTime();
+        var newName = dto.getEventName() != null ? dto.getEventName().trim() : existing.getEventName();
+
+        // In-memory duplicate check excluding self (same HH:mm)
+        if (newTime != null) {
+            var existingForUser = repo.findByOwnerIdOrderByTimeAsc(userId);
+            boolean conflict = existingForUser.stream().anyMatch(i ->
+                    !i.getId().equals(itemId) &&
+                            i.getTime() != null &&
+                            i.getTime().getHour() == newTime.getHour() &&
+                            i.getTime().getMinute() == newTime.getMinute()
+            );
+            if (conflict) {
+                throw new RuntimeException("Duplicate itinerary time for this user");
+            }
+        }
+
+        if (dto.getTime() != null) existing.setTime(newTime);
+        if (dto.getEventName() != null) existing.setEventName(newName);
+        if (dto.getDescription() != null) existing.setDescription(dto.getDescription());
+
+        ItineraryItem saved = repo.save(existing);
+        return new ItineraryItemDTO(saved.getId(), saved.getTime(), saved.getEventName(), saved.getDescription());
+    }
+
+    @Override
+    @Transactional
+    public void deleteItineraryItem(Long userId, Long itemId) {
+        ItineraryItem existing = repo.findById(itemId).orElseThrow(() -> new RuntimeException("Itinerary item not found"));
+        if (!userId.equals(existing.getOwnerId())) throw new RuntimeException("Forbidden");
+        repo.delete(existing);
+    }
+}

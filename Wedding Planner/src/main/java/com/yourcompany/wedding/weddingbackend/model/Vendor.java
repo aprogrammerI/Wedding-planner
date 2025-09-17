@@ -16,6 +16,10 @@ public class Vendor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Per-user ownership
+    @Column(nullable = false)
+    private Long ownerId;
+
     @Column(nullable = false)      private String name;
     @Column(nullable = false)      private String category;
     @Column(nullable = false)      private String phone;
@@ -35,4 +39,3 @@ public class Vendor {
     @Builder.Default
     private Set<Task> assignedTasks = new HashSet<>();
 }
-

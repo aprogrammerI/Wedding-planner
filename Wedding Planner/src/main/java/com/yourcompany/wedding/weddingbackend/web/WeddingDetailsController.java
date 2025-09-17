@@ -16,39 +16,27 @@ public class WeddingDetailsController {
 
     private final WeddingDetailsService weddingDetailsService;
 
-    /**
-     * Aggregated details page (no wedding id).
-     * Example: GET /api/details-page
-     */
     @GetMapping("/details-page")
-    public ResponseEntity<WeddingDetailsPageDTO> getDetailsPage() {
+    public ResponseEntity<WeddingDetailsPageDTO> getDetailsPage(@RequestHeader("X-User-Id") Long userId) {
         try {
-            WeddingDetailsPageDTO dto = weddingDetailsService.getWeddingDetailsPageData();
+            WeddingDetailsPageDTO dto = weddingDetailsService.getWeddingDetailsPageData(userId);
             return ResponseEntity.ok(dto);
         } catch (RuntimeException ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    /**
-     * Get the raw details record (first one) if present
-     * GET /api/details
-     */
     @GetMapping("/details")
-    public ResponseEntity<WeddingDetailsDTO> getDetails() {
-        return weddingDetailsService.getWeddingDetails()
+    public ResponseEntity<WeddingDetailsDTO> getDetails(@RequestHeader("X-User-Id") Long userId) {
+        return weddingDetailsService.getWeddingDetails(userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * Create or update the details record. Accepts an optional id; if id missing we'll create or update the first record.
-     * PUT /api/details
-     */
     @PutMapping("/details")
-    public ResponseEntity<WeddingDetailsDTO> saveDetails(@RequestBody WeddingDetailsDTO dto) {
+    public ResponseEntity<WeddingDetailsDTO> saveDetails(@RequestHeader("X-User-Id") Long userId, @RequestBody WeddingDetailsDTO dto) {
         try {
-            WeddingDetailsDTO saved = weddingDetailsService.saveWeddingDetails(dto);
+            WeddingDetailsDTO saved = weddingDetailsService.saveWeddingDetails(userId, dto);
             return ResponseEntity.ok(saved);
         } catch (RuntimeException ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

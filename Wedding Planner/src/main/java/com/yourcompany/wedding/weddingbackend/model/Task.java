@@ -20,6 +20,10 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Per-user ownership
+    @Column(nullable = false)
+    private Long ownerId;
+
     @Column(nullable = false)
     private String title;
 
@@ -45,12 +49,10 @@ public class Task {
     @Builder.Default
     private boolean reminderEnabled = false;
 
-    // Subtasks: cascade so saves/deletes propagate; orphanRemoval to auto-delete removed subtasks
+    // Subtasks: cascade saves/deletes; orphanRemoval auto-deletes removed subtasks
     @Builder.Default
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<Subtask> subtasks = new ArrayList<>();
-
-    // Removed @ManyToOne Wedding wedding; field as it's no longer needed for a global scope
 }

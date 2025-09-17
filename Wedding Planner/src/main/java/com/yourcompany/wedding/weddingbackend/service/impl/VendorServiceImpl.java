@@ -8,15 +8,11 @@ import com.yourcompany.wedding.weddingbackend.model.Vendor;
 import com.yourcompany.wedding.weddingbackend.repository.TaskRepository;
 import com.yourcompany.wedding.weddingbackend.repository.VendorRepository;
 import com.yourcompany.wedding.weddingbackend.service.VendorService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,23 +23,10 @@ public class VendorServiceImpl implements VendorService {
     private final TaskRepository taskRepo;
 
     @Override
-    public List<VendorDTO> getAll() {
-        return vendorRepo.findAll().stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public VendorDTO getById(Long id) {
-        Vendor v = vendorRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Vendor not found: " + id));
-        return toDTO(v);
-    }
-
-    @Override
     @Transactional
-    public VendorDTO create(CreateVendorRequest request) {
+    public VendorDTO create(Long userId, CreateVendorRequest request) {
         Vendor v = Vendor.builder()
+                .ownerId(userId)
                 .name(request.name())
                 .category(request.category())
                 .phone(request.phone())
@@ -54,10 +37,22 @@ public class VendorServiceImpl implements VendorService {
     }
 
     @Override
+    public List<VendorDTO> getAll(Long userId) {
+        return vendorRepo.findByOwnerId(userId).stream().map(this::toDTO).toList();
+    }
+
+    @Override
+    public VendorDTO getById(Long userId, Long id) {
+        Vendor v = vendorRepo.findById(id).orElseThrow(() -> new RuntimeException("Vendor not found"));
+        if (!userId.equals(v.getOwnerId())) throw new RuntimeException("Forbidden");
+        return toDTO(v);
+    }
+
+    @Override
     @Transactional
-    public VendorDTO update(Long id, CreateVendorRequest request) {
-        Vendor v = vendorRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Vendor not found: " + id));
+    public VendorDTO update(Long userId, Long id, CreateVendorRequest request) {
+        Vendor v = vendorRepo.findById(id).orElseThrow(() -> new RuntimeException("Vendor not found"));
+        if (!userId.equals(v.getOwnerId())) throw new RuntimeException("Forbidden");
         v.setName(request.name());
         v.setCategory(request.category());
         v.setPhone(request.phone());
@@ -68,85 +63,64 @@ public class VendorServiceImpl implements VendorService {
 
     @Override
     @Transactional
-    public void delete(Long id) {
-        vendorRepo.deleteById(id);
+    public void delete(Long userId, Long id) {
+        Vendor v = vendorRepo.findById(id).orElseThrow(() -> new RuntimeException("Vendor not found"));
+        if (!userId.equals(v.getOwnerId())) throw new RuntimeException("Forbidden");
+        vendorRepo.delete(v);
     }
 
     @Override
     @Transactional
-    public VendorDTO assignTask(Long vendorId, Long taskId) {
-        Vendor v = vendorRepo.findById(vendorId)
-                .orElseThrow(() -> new EntityNotFoundException("Vendor not found: " + vendorId));
-        Task t = taskRepo.findById(taskId)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found: " + taskId));
+    public VendorDTO assignTask(Long userId, Long vendorId, Long taskId) {
+        Vendor v = vendorRepo.findById(vendorId).orElseThrow(() -> new RuntimeException("Vendor not found"));
+        if (!userId.equals(v.getOwnerId())) throw new RuntimeException("Forbidden");
 
-        if (Boolean.TRUE.equals(t.isCompleted())) {
-            // Never assign completed tasks
-            throw new IllegalStateException("Cannot assign a completed task.");
-        }
+        Task t = taskRepo.findById(taskId).orElseThrow(() -> new RuntimeException("Task not found"));
+        if (!userId.equals(t.getOwnerId())) throw new RuntimeException("Forbidden");
+
         v.getAssignedTasks().add(t);
-        vendorRepo.save(v);
-        return toDTO(v);
+        return toDTO(vendorRepo.save(v));
     }
 
     @Override
     @Transactional
-    public VendorDTO unassignTask(Long vendorId, Long taskId) {
-        Vendor v = vendorRepo.findById(vendorId)
-                .orElseThrow(() -> new EntityNotFoundException("Vendor not found: " + vendorId));
-        v.getAssignedTasks().removeIf(task -> task.getId().equals(taskId));
-        vendorRepo.save(v);
-        return toDTO(v);
+    public VendorDTO unassignTask(Long userId, Long vendorId, Long taskId) {
+        Vendor v = vendorRepo.findById(vendorId).orElseThrow(() -> new RuntimeException("Vendor not found"));
+        if (!userId.equals(v.getOwnerId())) throw new RuntimeException("Forbidden");
+
+        v.getAssignedTasks().removeIf(t -> t.getId().equals(taskId));
+        return toDTO(vendorRepo.save(v));
     }
 
     @Override
-    public List<TaskSummaryDTO> getAvailableUnfinishedTasksForVendor(Long vendorId) {
-        Vendor v = vendorRepo.findById(vendorId)
-                .orElseThrow(() -> new EntityNotFoundException("Vendor not found: " + vendorId));
+    public List<TaskSummaryDTO> getAvailableUnfinishedTasksForVendor(Long userId, Long vendorId) {
+        Vendor v = vendorRepo.findById(vendorId).orElseThrow(() -> new RuntimeException("Vendor not found"));
+        if (!userId.equals(v.getOwnerId())) throw new RuntimeException("Forbidden");
 
-        Set<Long> assignedIds = v.getAssignedTasks()
-                .stream().map(Task::getId).collect(Collectors.toSet());
+        var vendorTaskIds = v.getAssignedTasks().stream().map(Task::getId).toList();
 
-        // unfinished tasks
-        return taskRepo.findByCompleted(false).stream()
-                .filter(t -> !assignedIds.contains(t.getId()))
-                .sorted(Comparator.comparing(Task::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparing(Task::getTitle))
-                .map(this::toSummary)
-                .collect(Collectors.toList());
+        return taskRepo.findByOwnerId(userId).stream()
+                .filter(t -> !t.isCompleted())
+                .filter(t -> !vendorTaskIds.contains(t.getId()))
+                .map(t -> new TaskSummaryDTO(t.getId(), t.getTitle(), t.isCompleted(), t.getDueDate()))
+                .toList();
     }
 
     @Override
     @Transactional
     public void unassignTaskFromAllVendors(Long taskId) {
-        List<Vendor> vendors = vendorRepo.findAll();
-        for (Vendor v : vendors) {
-            v.getAssignedTasks().removeIf(t -> t.getId().equals(taskId)); // Directly remove
-            vendorRepo.save(v);
-        }
+        vendorRepo.findAll().forEach(v -> {
+            if (v.getAssignedTasks().removeIf(t -> t.getId().equals(taskId))) {
+                vendorRepo.save(v);
+            }
+        });
     }
-
-    /* ----------------- Mappers ----------------- */
 
     private VendorDTO toDTO(Vendor v) {
-        List<TaskSummaryDTO> tasks = v.getAssignedTasks().stream()
-                .filter(t -> !Boolean.TRUE.equals(t.isCompleted())) // safety: do not expose completed here
-                .sorted(Comparator.comparing(Task::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparing(Task::getTitle))
-                .map(this::toSummary)
-                .collect(Collectors.toList());
-        return new VendorDTO(
-                v.getId(),
-                v.getName(),
-                v.getCategory(),
-                v.getPhone(),
-                v.getEmail(),
-                v.getWebsite(),
-                tasks
-        );
-    }
-
-    private TaskSummaryDTO toSummary(Task t) {
-        return new TaskSummaryDTO(t.getId(), t.getTitle(), t.isCompleted(), t.getDueDate());
+        var assigned = v.getAssignedTasks() == null ? List.<TaskSummaryDTO>of()
+                : v.getAssignedTasks().stream()
+                .map(t -> new TaskSummaryDTO(t.getId(), t.getTitle(), t.isCompleted(), t.getDueDate()))
+                .toList();
+        return new VendorDTO(v.getId(), v.getName(), v.getCategory(), v.getPhone(), v.getEmail(), v.getWebsite(), assigned);
     }
 }

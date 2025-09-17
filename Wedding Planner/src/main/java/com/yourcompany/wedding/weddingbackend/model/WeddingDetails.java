@@ -14,7 +14,11 @@ public class WeddingDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // independent id now
+    private Long id;
+
+    // Per-user ownership
+    @Column(nullable = false)
+    private Long ownerId;
 
     private String brideFirstName;
     private String brideLastName;
@@ -26,6 +30,4 @@ public class WeddingDetails {
 
     private LocalDate weddingDate;
     private String weddingLocation;
-
-    // NOTE: NO reference to Wedding entity here (decoupled)
 }
