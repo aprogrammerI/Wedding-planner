@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { TaskService, Task } from '../../services/task.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService, User } from '../../services/auth.service';
 import { VendorService, Vendor } from '../../services/vendor.service';
+import { TaskService, Task, Subtask, OverdueReminder } from '../../services/task.service';
 
 @Component({
   selector: 'app-task-manager',
@@ -17,6 +17,7 @@ export class TaskManager implements OnInit {
   tasks: Task[] = [];
   newTitle = '';
   newDescription = '';
+  newDueDate = '';
   newPriority: Task['priority'] = 'medium';
   newAssignedTo = '';
   newReminderDate = '';
@@ -27,7 +28,8 @@ export class TaskManager implements OnInit {
   showAddForm = false;
   isSortedByPriority = false;
   availableUsers: string[] = [];
-  overdueReminders: Task[] = [];
+  // overdueReminders: Task[] = [];
+  overdueReminders: OverdueReminder[] = [];
   upcomingReminders: Task[] = [];
   selectedAssignee: string = '';
   showFilteredTasks = false;
@@ -45,11 +47,11 @@ export class TaskManager implements OnInit {
     this.loadVendors();
     this.load();
     this.loadAvailableUsers();
-    this.loadReminders();
-    
+    this.loadOverdueReminders();
+
     // Refresh reminders every 5 minutes
     setInterval(() => {
-      this.loadReminders();
+      this.loadOverdueReminders();
     }, 5 * 60 * 1000);
   }
 
@@ -57,60 +59,102 @@ export class TaskManager implements OnInit {
     this.vendorService.list().subscribe(vs => this.vendors = vs);
   }
 
-  load() { 
+  load() {
     this.svc.list().subscribe(t => {
       this.tasks = t;
-      this.loadReminders(); // Refresh reminders when tasks are loaded
-    }); 
+      this.loadOverdueReminders(); // Refresh reminders when tasks are loaded
+    });
   }
 
   loadAvailableUsers() {
     // Get available users from auth service and add some common wedding roles
     this.availableUsers = [
       'Bride',
-      'Groom', 
+      'Groom',
       'Wedding Planner',
       'Other'
     ];
   }
 
-  loadReminders() {
-    this.svc.getOverdueReminders().subscribe(tasks => this.overdueReminders = tasks);
-    this.svc.getRemindersDueSoon().subscribe(tasks => this.upcomingReminders = tasks);
+  // loadReminders() {
+  //   this.svc.getOverdueReminders().subscribe(tasks => this.overdueReminders = tasks);
+  //   this.svc.getRemindersDueSoon().subscribe(tasks => this.upcomingReminders = tasks);
+  // }
+
+  loadOverdueReminders() {
+    this.svc.getOverdueReminders().subscribe({
+      next: (reminders) => {
+        this.overdueReminders = reminders;
+      },
+      error: (error) => {
+        console.error('Error loading overdue reminders:', error);
+        this.overdueReminders = [];
+      }
+    });
   }
 
   refreshReminders() {
-    this.loadReminders();
+    this.loadOverdueReminders();
   }
 
-  // Sync reminder date when reminder is enabled
+
+     //ADDED
+  assigneeLabel(a?: string): string {
+    if (!a) return '';
+    const map: Record<string, string> = {
+      BRIDE: 'Bride',
+      GROOM: 'Groom',
+      PLANNER: 'Wedding Planner',
+      OTHER: 'Other'
+    };
+    return map[a] || a;
+  }
+
+
+
+  // Sync reminder date with due date when due date changes
+  onDueDateChange() {
+    if (this.newReminderEnabled && this.newDueDate && !this.newReminderDate) {
+      this.newReminderDate = this.newDueDate;
+    }
+  }
+
+  // Sync reminder date with due date when reminder is enabled
   onReminderEnabledChange() {
-    // Reminder date can be set independently now
+    if (this.newReminderEnabled && this.newDueDate && !this.newReminderDate) {
+      this.newReminderDate = this.newDueDate;
+    }
   }
 
   add() {
     if (!this.newTitle.trim()) return;
-    
-    this.svc.add({ 
-        title: this.newTitle, 
+
+    // If reminder is enabled but no reminder date is set, use the due date
+    const reminderDate = this.newReminderEnabled && !this.newReminderDate && this.newDueDate
+      ? this.newDueDate
+      : this.newReminderDate || undefined;
+
+    this.svc.add({
+        title: this.newTitle,
         done: false,
         description: this.newDescription || undefined,
-        dueDate: undefined,
+        dueDate: this.newDueDate || undefined,
         priority: this.newPriority,
         assignedTo: this.newAssignedTo || undefined,
-        reminderDate: this.newReminderDate || undefined,
+        reminderDate: reminderDate,
         reminderEnabled: this.newReminderEnabled,
       })
       .subscribe({
-        next: () => { 
-          this.newTitle = ''; 
+        next: () => {
+          this.newTitle = '';
           this.newDescription = '';
+          this.newDueDate = '';
           this.newPriority = 'medium';
           this.newAssignedTo = '';
           this.newReminderDate = '';
           this.newReminderEnabled = false;
           this.showAddForm = false;
-          this.load(); 
+          this.load();
         },
         error: (error) => {
           console.error('Error adding task:', error);
@@ -122,7 +166,7 @@ export class TaskManager implements OnInit {
   toggle(t: Task) {
     t.done = !t.done;
     this.svc.update(t).subscribe({
-      next: () => this.loadReminders(),
+      next: () => this.loadOverdueReminders(),
       error: (error) => {
         console.error('Error updating task:', error);
         t.done = !t.done; // Revert the change
@@ -136,7 +180,7 @@ export class TaskManager implements OnInit {
     this.svc.update(updated).subscribe({
       next: () => {
         Object.assign(task, updated);
-        this.loadReminders();
+        this.loadOverdueReminders();
       },
       error: (error) => {
         console.error('Error updating task:', error);
@@ -145,7 +189,7 @@ export class TaskManager implements OnInit {
     });
   }
 
-  remove(id: number) { 
+  remove(id: number) {
     this.svc.remove(id).subscribe({
       next: () => this.load(),
       error: (error) => {
@@ -157,7 +201,7 @@ export class TaskManager implements OnInit {
 
   startEdit(task: Task) {
     this.editingTaskId = task.id;
-    this.editDraft = { 
+    this.editDraft = {
       ...task,
       reminderDate: task.dueDate || task.reminderDate, // Use due date as reminder date if available
       reminderEnabled: !!(task.dueDate || task.reminderEnabled) // Enable if there's a due date or reminder
@@ -203,6 +247,7 @@ export class TaskManager implements OnInit {
     this.showAddForm = false;
     this.newTitle = '';
     this.newDescription = '';
+    this.newDueDate = '';
     this.newPriority = 'medium';
     this.newAssignedTo = '';
     this.newReminderDate = '';
@@ -313,12 +358,12 @@ export class TaskManager implements OnInit {
   // Get reminder status text
   getReminderStatus(task: Task): string {
     if (!task.reminderDate || !task.reminderEnabled) return '';
-    
+
     const reminderDate = new Date(task.reminderDate);
     const today = new Date();
     const diffTime = reminderDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays < 0) {
       return `Overdue by ${Math.abs(diffDays)} day(s)`;
     } else if (diffDays === 0) {
@@ -392,5 +437,19 @@ export class TaskManager implements OnInit {
     return this.vendors.find(v => v.id === id);
   }
 
+  // Method to handle subtask status updates with proper error handling
+  updateSubtaskStatus(task: Task, subtask: Subtask) {
+    this.svc.updateSubtask(task.id, subtask.id, { done: subtask.done }).subscribe({
+      next: () => {
+        console.log('Subtask status updated successfully');
+      },
+      error: (error) => {
+        console.error('Error updating subtask status:', error);
+        // Revert the change if update fails
+        subtask.done = !subtask.done;
+        alert('Failed to update subtask status. Please try again.');
+      }
+    });
+  }
 
 }

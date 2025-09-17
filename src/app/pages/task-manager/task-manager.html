@@ -7,6 +7,17 @@
   </button>
 </div>
 
+<!-- Debug Info (remove in production) -->
+<div class="alert alert-info" *ngIf="false">
+  <small>
+    Tasks: {{ tasks.length }} | 
+    Overdue: {{ overdueReminders.length }} | 
+    Upcoming: {{ upcomingReminders.length }} | 
+    Sorted: {{ isSortedByPriority }} | 
+    Filtered: {{ showFilteredTasks }}
+  </small>
+</div>
+
 <!-- Task Filters -->
 <div class="task-filters mb-3" *ngIf="!isSortedByPriority && !showFilteredTasks">
   <div class="row g-2 align-items-center">
@@ -25,8 +36,15 @@
 <!-- Add Task Form -->
 <div *ngIf="showAddForm" class="mb-3 row g-2 align-items-end">
   <div class="col-md-4">
-    <label class="form-label">Title</label>
-    <input [(ngModel)]="newTitle" class="form-control" placeholder="Task title" />
+    <label class="form-label">Title <span class="text-danger">*</span></label>
+    <input [(ngModel)]="newTitle" class="form-control" placeholder="Task title" required />
+    <div class="invalid-feedback" *ngIf="!newTitle.trim() && showAddForm">
+      Task title is required
+    </div>
+  </div>
+  <div class="col-md-2">
+    <label class="form-label">Due date</label>
+    <input type="date" [(ngModel)]="newDueDate" (change)="onDueDateChange()" class="form-control" />
   </div>
   <div class="col-md-2">
     <label class="form-label">Priority</label>
@@ -44,7 +62,7 @@
     </select>
   </div>
   <div class="col-md-2 d-flex gap-2">
-    <button (click)="add()" class="btn btn-primary w-100">Add</button>
+    <button (click)="add()" class="btn btn-primary w-100" [disabled]="!newTitle.trim()">Add</button>
     <button (click)="cancelAdd()" class="btn btn-outline-secondary w-100">Cancel</button>
   </div>
   <div class="col-12">
@@ -71,10 +89,15 @@
   <li class="list-group-item" [class.expanded]="expandedTaskId === task.id">
     <div class="d-flex justify-content-between align-items-start gap-3" (click)="toggleExpandTask(task)" style="cursor:pointer;">
       <div class="form-check mt-1" (click)="$event.stopPropagation()">
-        <input class="form-check-input" 
-               type="checkbox" 
-               [checked]="task.done" 
-               (change)="onDoneChange(task, $any($event.target).checked)" />
+        <input class="form-check-input"
+               type="checkbox"
+               [checked]="task.done"
+               [id]="'task-checkbox-' + task.id"
+               (change)="onDoneChange(task, $any($event.target).checked)"
+               [attr.aria-label]="'Mark task ' + task.title + ' as ' + (task.done ? 'incomplete' : 'complete')" />
+        <label class="form-check-label" [for]="'task-checkbox-' + task.id" class="visually-hidden">
+          Mark task as {{ task.done ? 'incomplete' : 'complete' }}
+        </label>
       </div>
       <div class="flex-grow-1">
         <div *ngIf="editingTaskId !== task.id; else editForm">
@@ -108,9 +131,9 @@
         </div>
         <ng-template #editForm>
           <div class="row g-2">
-            <div class="col-md-4">
-              <input [(ngModel)]="editDraft.title" 
-                     class="form-control form-control-sm" 
+            <div class="col-md-5">
+              <input [(ngModel)]="editDraft.title"
+                     class="form-control form-control-sm"
                      placeholder="Title" />
             </div>
             <div class="col-md-2">
@@ -126,21 +149,21 @@
                 <option *ngFor="let user of availableUsers" [value]="user">{{ user }}</option>
               </select>
             </div>
-            <div class="col-md-3 d-flex gap-2">
+            <div class="col-md-2 d-flex gap-2">
               <button (click)="saveEdit()" class="btn btn-sm btn-primary">Save</button>
               <button (click)="cancelEdit()" class="btn btn-sm btn-outline-secondary">Cancel</button>
             </div>
             <div class="col-12">
-              <textarea [(ngModel)]="editDraft.description" 
-                        class="form-control form-control-sm" 
-                        rows="2" 
+              <textarea [(ngModel)]="editDraft.description"
+                        class="form-control form-control-sm"
+                        rows="2"
                         placeholder="Description"></textarea>
             </div>
             <div class="col-md-4">
               <div class="form-check">
-                <input class="form-check-input" 
-                       type="checkbox" 
-                       [(ngModel)]="editDraft.reminderEnabled" 
+                <input class="form-check-input"
+                       type="checkbox"
+                       [(ngModel)]="editDraft.reminderEnabled"
                        [id]="'editReminderCheck' + task.id">
                 <label class="form-check-label" [for]="'editReminderCheck' + task.id">
                   Enable reminder
@@ -149,30 +172,35 @@
             </div>
             <div class="col-md-4" *ngIf="editDraft.reminderEnabled">
               <label class="form-label form-label-sm">Due/Reminder Date</label>
-              <input type="date" 
-                     [(ngModel)]="editDraft.reminderDate" 
-                     class="form-control form-control-sm" 
+              <input type="date"
+                     [(ngModel)]="editDraft.reminderDate"
+                     class="form-control form-control-sm"
                      placeholder="Due/Reminder date" />
             </div>
           </div>
         </ng-template>
       </div>
-      <div class="task-actions" (click)="$event.stopPropagation()" *ngIf="editingTaskId !== task.id">
-        <mat-icon class="edit-icon" 
-                  (click)="startEdit(task)" 
+      <div class="task-actions" (click)="$event.stopPropagation()">
+        <mat-icon class="edit-icon"
+                  (click)="startEdit(task)"
                   title="Edit Task">edit</mat-icon>
-        <mat-icon class="delete-icon" 
-                  (click)="remove(task.id)" 
+        <mat-icon class="delete-icon"
+                  (click)="remove(task.id)"
                   title="Delete Task">delete</mat-icon>
-        <mat-icon class="add-subtask-icon" 
-                  (click)="addSubtask(task)" 
+        <mat-icon class="add-subtask-icon"
+                  (click)="addSubtask(task)"
                   title="Add Subtask">add</mat-icon>
       </div>
     </div>
     <!-- Subtasks List -->
     <ul *ngIf="task.subtasks && task.subtasks.length && expandedTaskId === task.id" class="subtask-list ms-4 mt-2">
       <li *ngFor="let sub of task.subtasks" class="align-items-center d-flex gap-2">
-        <input type="checkbox" [(ngModel)]="sub.done" (change)="svc.updateSubtask(task.id, sub.id, { done: sub.done }).subscribe()"> {{ sub.title }}
+        <input type="checkbox" 
+               [(ngModel)]="sub.done" 
+               (change)="updateSubtaskStatus(task, sub)"
+               [id]="'subtask-checkbox-' + sub.id"
+               [attr.aria-label]="'Mark subtask ' + sub.title + ' as ' + (sub.done ? 'incomplete' : 'complete')">
+        <label [for]="'subtask-checkbox-' + sub.id" class="form-label mb-0">{{ sub.title }}</label>
         <span class="subtask-actions">
           <mat-icon class="subtask-edit-icon" (click)="editSubtask(task, sub)" title="Edit Subtask">edit</mat-icon>
           <mat-icon class="subtask-delete-icon" (click)="deleteSubtask(task, sub)" title="Delete Subtask">delete</mat-icon>
@@ -192,7 +220,7 @@
       <i class="fas fa-times me-1"></i>Clear Filter
     </button>
   </div>
-  
+
   <ul class="list-group">
     <ng-container *ngFor="let t of getTasksByAssignee(selectedAssignee)">
       <ng-container *ngTemplateOutlet="taskTemplate; context: { $implicit: t }">
@@ -261,7 +289,7 @@
         <i class="fas fa-chart-pie me-2"></i>Overall Progress
       </h6>
       <div class="progress mb-2" style="height: 20px;">
-        <div class="progress-bar" 
+        <div class="progress-bar"
              [style.width.%]="getOverallTaskCompletionPercentage()"
              [ngClass]="{
                'bg-success': getOverallTaskCompletionPercentage() >= 80,
@@ -286,17 +314,24 @@
     </h6>
     <!-- Refresh button removed -->
   </div>
-  
+
   <!-- Overdue Reminders -->
   <div class="alert alert-danger" *ngIf="overdueReminders.length > 0">
     <h6 class="alert-heading">
       <i class="fas fa-exclamation-triangle me-2"></i>Overdue Reminders ({{ overdueReminders.length }})
     </h6>
     <div class="reminder-list">
-      <div *ngFor="let task of overdueReminders" class="reminder-item">
-        <strong>{{ task.title }}</strong> - {{ getReminderStatus(task) }}
-        <span *ngIf="task.assignedTo" class="ms-2 text-muted">({{ task.assignedTo }})</span>
-      </div>
+<!--      <div *ngFor="let task of overdueReminders" class="reminder-item">-->
+<!--        <strong>{{ task.title }}</strong> - {{ getReminderStatus(task) }}-->
+<!--        <span *ngIf="task.assignedTo" class="ms-2 text-muted">({{ task.assignedTo }})</span>-->
+<!--      </div>-->
+
+      <li *ngFor="let r of overdueReminders">
+        <strong>{{ r.title }}</strong>
+        <span class="ms-2 text-muted" *ngIf="r.assignee">({{ assigneeLabel(r.assignee) }})</span>
+        <span class="ms-2">- Overdue by {{ r.daysOverdue }} day(s)</span>
+      </li>
+
     </div>
   </div>
 

@@ -60,11 +60,19 @@ export interface ProgressDTO {
   completionPercentage: number;
 }
 
-export interface OverdueReminderDTO {
+// export interface OverdueReminderDTO {
+//   taskId: number;
+//   title: string;
+//   dueDate: string;
+//   daysOverdue: number;
+// }
+
+export interface OverdueReminder {
   taskId: number;
   title: string;
-  dueDate: string;
+  assignee: 'BRIDE' | 'GROOM' | 'PLANNER' | 'OTHER' | string;
   daysOverdue: number;
+  dueDate: string; // ISO
 }
 
 @Injectable({
@@ -198,32 +206,20 @@ export class TaskService {
     return this.list().pipe(
       map(tasks => {
         const now = new Date();
-        return tasks.filter(task => 
-          task.reminderEnabled && 
-          task.reminderDate && 
+        return tasks.filter(task =>
+          task.reminderEnabled &&
+          task.reminderDate &&
           !task.done
         );
       })
     );
   }
 
-  // Get overdue reminders
-  getOverdueReminders(): Observable<Task[]> {
-    return this.http.get<OverdueReminderDTO[]>(`${this.API_BASE_URL}/overdue`).pipe(
-      map(overdueReminders => {
-        // Convert overdue reminders to tasks for compatibility
-        return overdueReminders.map(reminder => ({
-          id: reminder.taskId,
-          title: reminder.title,
-          done: false,
-          dueDate: reminder.dueDate,
-          reminderEnabled: true,
-          reminderDate: reminder.dueDate
-        } as Task));
-      }),
+  getOverdueReminders(): Observable<OverdueReminder[]> {
+    return this.http.get<OverdueReminder[]>(`${this.API_BASE_URL}/overdue`).pipe(
       catchError(error => {
         console.error('Error fetching overdue reminders:', error);
-        return of([]);
+        return throwError(() => new Error('Failed to fetch overdue reminders'));
       })
     );
   }
@@ -234,9 +230,9 @@ export class TaskService {
       map(tasks => {
         const now = new Date();
         const threeDaysFromNow = new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000));
-        return tasks.filter(task => 
-          task.reminderEnabled && 
-          task.reminderDate && 
+        return tasks.filter(task =>
+          task.reminderEnabled &&
+          task.reminderDate &&
           new Date(task.reminderDate) <= threeDaysFromNow &&
           new Date(task.reminderDate) >= now &&
           !task.done
